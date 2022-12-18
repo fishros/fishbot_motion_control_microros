@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
-#include <ESP32MotorControl.h>
 #include "Esp32PcntEncoder.h"
 #include "Esp32McpwmMotor.h"
 #include "PidController.h"
