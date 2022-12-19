@@ -18,6 +18,11 @@
         "memory": "cpp",
         "future": "cpp",
         "istream": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "fstream": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "map": "cpp",
+        "set": "cpp"
     }
 }

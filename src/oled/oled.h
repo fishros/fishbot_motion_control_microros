@@ -9,7 +9,7 @@ class Oled
 {
 public:
     Oled();
-    void init();
+    void init(int sdaPin, int sclPin);
     void oledDrawText(int16_t x, int16_t y, const String &s);
 
 private:

@@ -4,9 +4,9 @@ Oled::Oled()
 {
 }
 
-void Oled::init()
+void Oled::init(int sdaPin, int sclPin)
 {
-    Wire.begin(18, 19);
+    Wire.begin(sdaPin, sclPin);
     _display = Adafruit_SSD1306(128, 64, &Wire);
     _display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // 设置OLED的I2C地址
     _display.clearDisplay();                    // 清空屏幕

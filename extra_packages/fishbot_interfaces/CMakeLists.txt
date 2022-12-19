@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(my_custom_message)
+project(fishbot_interfaces)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -35,7 +35,7 @@ endif()
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/MyCustomMessage.msg"
+  "srv/FishBotConfig.srv"
  )
 
 ament_package()
