@@ -8,9 +8,8 @@
 #include <std_msgs/msg/int32.h>
 #include <std_msgs/msg/float32_multi_array.h>
 
-#if !defined(MICRO_ROS_TRANSPORT_ARDUINO_SERIAL)
-#error This example is only avaliable for Arduino framework with serial transport.
-#endif
+#include "pio_rwm/serial/micro_ros_transport_serial.h"
+#include "pio_rwm/wifi/micro_ros_transport_wifi_udp.h"
 
 rcl_publisher_t publisher;
 std_msgs__msg__Int32 msg;

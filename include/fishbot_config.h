@@ -8,14 +8,14 @@
 #define CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT 1 // UDP客户端模式，1
 
 /*=========================================默认值定义=====================================*/
-#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.1.1" // 默认UDP服务端IP
+#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT 8888        // 默认UDP服务端端口号
-#define CONFIG_DEFAULT_TRANSPORT_MODE CONFIG_TRANSPORT_MODE_SERIAL // 默认传输模式-串口模式
+#define CONFIG_DEFAULT_TRANSPORT_MODE CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT // 默认传输模式-串口模式
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD 115200
 
 //------------------------------------WIFI SSID-----------------------------------------
-#define CONFIG_DEFAULT_WIFI_STA_SSID "fishbot"
-#define CONFIG_DEFAULT_WIFI_STA_PSWK "12345678"
+#define CONFIG_DEFAULT_WIFI_STA_SSID "m3"
+#define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
 
 //----------------------------------电机相关配置------------------------------------------
 #define CONFIG_DEFAULT_MOTOR_PID_KP 0.625
@@ -73,7 +73,7 @@
 #define CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_TIMER_TIME 50
 #define CONFIG_DEFAULT_ROS2_HANDLE_NUM 2
 #define CONFIG_DEFAULT_ROS2_RCL_SPIN_TIME 100
-#define CONFIG_DEFAULT_ROS2_TIME_SYNC_TIMEOUT 1000
+#define CONFIG_DEFAULT_ROS2_TIME_SYNC_TIMEOUT 5000
 
 /*========================================配置名称=======================================*/
 #define CONFIG_NAME_NAMESPACE "fishbot"

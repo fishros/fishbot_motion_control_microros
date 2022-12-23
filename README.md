@@ -9,7 +9,16 @@
 
 需要提前安装docker，可以使用一键安装进行。
 
+
+WIFI,UDP模式
+
 ```
 docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host microros/micro-ros-agent:$ROS_DISTRO udp4 --port 8888 -v6
 ```
 
+Serial,串口模式
+
+```bash
+# Serial micro-ROS Agent
+docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host microros/micro-ros-agent:$ROS_DISTRO serial --dev /dev/ttyUSB0 -v6
+```
