@@ -28,7 +28,6 @@ extern "C"
   size_t platformio_transport_write_wifi_udp(struct uxrCustomTransport *transport, const uint8_t *buf, size_t len, uint8_t *errcode)
   {
     (void)errcode;
-
     struct micro_ros_agent_locator *locator = (struct micro_ros_agent_locator *)transport->args;
 
     size_t sent = 0;

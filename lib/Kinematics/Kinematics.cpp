@@ -76,7 +76,7 @@ void Kinematics::update_bot_odom_(uint32_t dt)
     odom_.yaw += odom_.angular_speed * dt_s;
 
     Kinematics::TransAngleInPI(odom_.yaw, odom_.yaw);
-    Kinematics::Euler2Quaternion(0, 0, odom_.yaw, odom_.quaternion);
+    
 
     /*更新x和y轴上移动的距离*/
     float delta_distance = odom_.linear_speed * dt_s; // 单位m
@@ -103,6 +103,7 @@ void Kinematics::kinematic_forward(float wheel1_speed, float wheel2_speed, float
 
 odom_t &Kinematics::odom()
 {
+    Kinematics::Euler2Quaternion(0, 0, odom_.yaw, odom_.quaternion);
     return odom_;
 }
 

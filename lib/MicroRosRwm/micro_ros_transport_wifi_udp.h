@@ -17,7 +17,7 @@ struct micro_ros_agent_locator
     IPAddress address;
     int port;
 };
-static inline void set_microros_wifi_transports(char *ssid, char *pass, IPAddress agent_ip, uint16_t agent_port)
+static inline void set_microros_wifi_transports(const char *ssid,const char *pass, IPAddress agent_ip, uint16_t agent_port)
 {
     WiFi.begin(ssid, pass);
 

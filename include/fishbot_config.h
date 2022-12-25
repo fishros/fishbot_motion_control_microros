@@ -2,6 +2,8 @@
 #define __FISHBOT_CONFIG_H__
 
 #include <Arduino.h>
+#include <Preferences.h>
+#include <WiFi.h>
 
 /*=========================================常量值定义========================================*/
 #define CONFIG_TRANSPORT_MODE_SERIAL 0          // 串口模式，0
@@ -9,30 +11,32 @@
 
 /*=========================================默认值定义=====================================*/
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
-#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT 8888        // 默认UDP服务端端口号
-#define CONFIG_DEFAULT_TRANSPORT_MODE CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT // 默认传输模式-串口模式
-#define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD 115200
+#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
+#define CONFIG_DEFAULT_TRANSPORT_MODE "0"                            // 默认传输模式-串口模式
+#define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 115200
+#define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "115200"
 
 //------------------------------------WIFI SSID-----------------------------------------
 #define CONFIG_DEFAULT_WIFI_STA_SSID "m3"
 #define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
 
-//----------------------------------电机相关配置------------------------------------------
-#define CONFIG_DEFAULT_MOTOR_PID_KP 0.625
-#define CONFIG_DEFAULT_MOTOR_PID_KI 0.125
-#define CONFIG_DEFAULT_MOTOR_PID_KD 0.0
-#define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_LOW -100
-#define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH 100
-#define CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO 45
-#define CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION 44
-#define CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER 65
-#define CONFIG_DEFAULT_MOTOR1_PARAM_REDUCATION_RATIO 45
-#define CONFIG_DEFAULT_MOTOR1_PARAM_PULSE_RATION 44
-#define CONFIG_DEFAULT_MOTOR1_PARAM_WHEEL_DIAMETER 65
-// -------------------------------默认轮距-----------------------------------------------
-#define CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE 150
+//--------------------------------------电机相关配置--------------------------------------- 
+#define CONFIG_DEFAULT_MOTOR_PID_KP "0.625"
+#define CONFIG_DEFAULT_MOTOR_PID_KI "0.125"
+#define CONFIG_DEFAULT_MOTOR_PID_KD "0.0"
 
-//------------------------------------IO相关配置-------------------------------------------
+#define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_LOW "-100"
+#define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH "100"
+#define CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO "45"
+#define CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION "44"
+#define CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER "65"
+#define CONFIG_DEFAULT_MOTOR1_PARAM_REDUCATION_RATIO "45"
+#define CONFIG_DEFAULT_MOTOR1_PARAM_PULSE_RATION "44"
+#define CONFIG_DEFAULT_MOTOR1_PARAM_WHEEL_DIAMETER "65"
+//-------------------------------------默认轮距----------------------------------------------
+#define CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE "150"
+
+//------------------------------------IO相关配置----------------------------------------------
 // IMU
 #define CONFIG_DEFAULT_IMU_SDA_GPIO 18
 #define CONFIG_DEFAULT_IMU_SCL_GPIO 19
@@ -70,10 +74,10 @@
 #define CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME "odom"
 #define CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID "odom"
 #define CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME "cmd_vel"
-#define CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_TIMER_TIME 50
-#define CONFIG_DEFAULT_ROS2_HANDLE_NUM 2
-#define CONFIG_DEFAULT_ROS2_RCL_SPIN_TIME 100
-#define CONFIG_DEFAULT_ROS2_TIME_SYNC_TIMEOUT 5000
+#define CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD "50"
+#define CONFIG_DEFAULT_ROS2_HANDLE_NUM "2"
+#define CONFIG_DEFAULT_ROS2_RCL_SPIN_TIME "100"
+#define CONFIG_DEFAULT_ROS2_TIME_SYNC_TIMEOUT "5000"
 
 /*========================================配置名称=======================================*/
 #define CONFIG_NAME_NAMESPACE "fishbot"
@@ -81,10 +85,12 @@
 #define CONFIG_NAME_TRANSPORT_SERIAL_BAUD "serial_baud"
 #define CONFIG_NAME_TRANSPORT_MODE_WIFI_SERVER_IP "server_ip"
 #define CONFIG_NAME_TRANSPORT_MODE_WIFI_SERVER_PORT "server_port"
+
 // WIFI名称
 #define CONFIG_NAME_WIFI_STA_SSID_NAME "wifi_name"
 #define CONFIG_NAME_WIFI_STA_PSWK_NAME "wifi_pswk"
 #define CONFIG_NAME_IS_FIRST_STARTUP "first_startup"
+
 // ROS2相关
 #define CONFIG_NAME_ROS2_ODOM_TOPIC_NAME "odom_topic"
 #define CONFIG_NAME_ROS2_ODOM_FRAMEID_NAME "odom_frameid"
@@ -110,5 +116,54 @@
 #define CONFIG_NAME_KINEMATIC_WHEEL_DISTANCE "wheel_dist"
 
 #define FIRST_START_TIP "=================================================\n     wwww.fishros.com        \nfishbot-motion-control-v1.0.0\n=================================================\n"
+
+class FishBotConfig
+{
+private:
+    /* data */
+    Preferences preferences;
+
+public:
+    void init(String namespace_);
+    uint32_t is_first_startup();
+
+    bool config(String key, String value);
+    bool config(String key, int32_t value);
+    bool config(String key, uint32_t value);
+    bool config(String key, const float_t value);
+    bool config(String key, const bool value);
+
+    String config_str();
+    String board_name();
+    // 基础配置
+    uint32_t serial_baudrate();
+    String wifi_sta_ssid();
+    String wifi_sta_pswd();
+    String wifi_ap_ssid();
+    String wifi_ap_pswd();
+    // MicroROS相关
+    int32_t microros_transport_mode();
+    String microros_uclient_server_ip();
+    uint32_t microros_uclient_server_port();
+    // ROS2相关
+    String ros2_nodename();
+    String ros2_namespace();
+    String ros2_odom_topic_name();
+    String ros2_odom_frameid();
+    String ros2_twist_topic_name();
+    uint32_t odom_publish_period();
+    // 运动学相关配置
+    uint32_t kinematics_reducation_ration();
+    uint32_t kinematics_pulse_ration();
+    uint32_t kinematics_wheel_diameter();
+    float kinematics_wheel_distance();
+    float kinematics_pid_kp();
+    float kinematics_pid_ki();
+    float kinematics_pid_kd();
+    float kinematics_pid_out_limit();
+
+    FishBotConfig(/* args */) = default;
+    ~FishBotConfig() = default;
+};
 
 #endif // __FISHBOT_CONFIG_H__

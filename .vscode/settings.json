@@ -23,6 +23,12 @@
         "ostream": "cpp",
         "sstream": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "random": "cpp"
     }
 }

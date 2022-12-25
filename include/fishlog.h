@@ -2,7 +2,6 @@
 #define __FISHLOG_H__
 
 #include "Arduino.h"
-#include "BluetoothSerial.h"
 
 #define LOG_LEVEL_DEBUG 0
 #define LOG_LEVEL_INFO 1
@@ -35,12 +34,6 @@ public:
     {
         if (target != nullptr)
         {
-            // va_list args;
-            // va_start(args, format);
-            // int size = vsniprintf(log_buff, 512 - 1, format, args);
-            // va_end(args);
-            // target->write(log_buff, size);
-            // target->flush();
             char loc_buf[64];
             char *temp = loc_buf;
             va_list arg;
