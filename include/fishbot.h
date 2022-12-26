@@ -17,12 +17,13 @@
 #include <geometry_msgs/msg/twist.h>
 #include <fishbot_interfaces/srv/fish_bot_config.h>
 #include <micro_ros_utilities/type_utilities.h>
-
+#include <micro_ros_utilities/string_utilities.h>
 #include "micro_ros_transport_serial.h"
 #include "micro_ros_transport_wifi_udp.h"
 
 #include "fishlog.h"
 #include "fishbot_config.h"
+#include "fishbot_display.h"
 
 #define RCSOFTCHECK(fn)                                                                 \
     {                                                                                   \

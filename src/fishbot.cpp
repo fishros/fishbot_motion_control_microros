@@ -30,6 +30,7 @@ Esp32PcntEncoder encoders[2];
 Esp32McpwmMotor motor;
 Kinematics kinematics;
 FishBotConfig config;
+FishBotDisplay display;
 
 bool setup_fishbot()
 {
@@ -37,6 +38,7 @@ bool setup_fishbot()
     config.init(CONFIG_NAME_NAMESPACE);
     Serial.begin(CONFIG_DEFAULT_SERIAL_SERIAL_BAUD);
     Serial.println(FIRST_START_TIP);
+
     Serial.println(config.config_str());
     // 2.设置IO 电机&编码器
     motor.attachMotors(CONFIG_DEFAULT_MOTOR0_A_GPIO, CONFIG_DEFAULT_MOTOR0_B_GPIO, CONFIG_DEFAULT_MOTOR1_A_GPIO, CONFIG_DEFAULT_MOTOR1_B_GPIO);
@@ -95,23 +97,13 @@ bool microros_setup_transport_udp_client_()
     String twist_topic = config.ros2_twist_topic_name();
     String odom_topic = config.ros2_odom_topic_name();
     String odom_frameid_str = config.ros2_odom_frameid();
-    sprintf(odom_frame_id, "%s", odom_frameid_str.c_str());
-    odom_msg.header.frame_id.data = odom_frame_id;
+    odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
     const unsigned int timer_timeout = config.odom_publish_period();
     // 初始化数据接收配置
-    config_req.key.capacity = keyvalue_capacity;
-    config_req.key.data = config_srv_memory;
-    config_req.key.size = 0;
-    config_req.value.capacity = keyvalue_capacity;
-    config_req.value.data = config_srv_memory + keyvalue_capacity;
-    config_req.value.size = 0;
-
-    config_res.key.capacity = keyvalue_capacity;
-    config_res.key.data = config_srv_memory + keyvalue_capacity * 2;
-    config_res.key.size = 0;
-    config_res.value.capacity = keyvalue_capacity;
-    config_res.value.data = config_srv_memory + keyvalue_capacity * 3;
-    config_res.value.size = 0;
+    config_req.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_req.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_res.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_res.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
 
     IPAddress agent_ip;
     agent_ip.fromString(ip);
@@ -135,7 +127,6 @@ bool microros_setup_transport_udp_client_()
         &node,
         ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
         "/fishbot_config"));
-
     RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
     RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     return true;
@@ -180,13 +171,11 @@ void callback_config_service_(const void *req, void *res)
 {
     fishbot_interfaces__srv__FishBotConfig_Request *req_in = (fishbot_interfaces__srv__FishBotConfig_Request *)req;
     fishbot_interfaces__srv__FishBotConfig_Response *res_in = (fishbot_interfaces__srv__FishBotConfig_Response *)res;
-    Serial.print("===================================================\n");
     String recv_key(req_in->key.data);
     String recv_value(req_in->value.data);
     Serial.printf("recv service key=%s,value=%s\n", req_in->key.data, req_in->value.data);
     config.config(recv_key, recv_value);
-    Serial.print("---------------------------------------------------\n");
-    Serial.println(config.config_str());
+    // PID相关配置
     if (recv_key.startsWith("pid_"))
     {
         pid_controller[0].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), config.kinematics_pid_kd());
@@ -194,5 +183,17 @@ void callback_config_service_(const void *req, void *res)
         pid_controller[0].out_limit(-config.kinematics_pid_out_limit(), config.kinematics_pid_out_limit());
         pid_controller[1].out_limit(-config.kinematics_pid_out_limit(), config.kinematics_pid_out_limit());
     }
-    Serial.print("===================================================\n");
+    // 系统相关配置
+    if (recv_key.equalsIgnoreCase("system"))
+    {
+        if (recv_value.equalsIgnoreCase("restart"))
+        {
+            xTaskCreate([](void *param)
+                        {for(int i=0;i<3;i++)delay(1000);esp_restart(); },
+                        "restart_task", 1024, NULL, 1, NULL);
+        }
+    }
+
+    sprintf(res_in->key.data, "%s", req_in->key.data);
+    sprintf(res_in->value.data, "%s", req_in->key.data);
 }
