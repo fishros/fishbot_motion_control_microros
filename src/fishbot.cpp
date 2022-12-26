@@ -24,13 +24,13 @@ rcl_node_t node;
 rcl_timer_t timer;
 
 /*========================FishBot控制相关====================*/
-// Oled oled;
 PidController pid_controller[2];
 Esp32PcntEncoder encoders[2];
 Esp32McpwmMotor motor;
 Kinematics kinematics;
 FishBotConfig config;
 FishBotDisplay display;
+float battery_voltage;
 
 bool setup_fishbot()
 {
@@ -38,8 +38,8 @@ bool setup_fishbot()
     config.init(CONFIG_NAME_NAMESPACE);
     Serial.begin(CONFIG_DEFAULT_SERIAL_SERIAL_BAUD);
     Serial.println(FIRST_START_TIP);
-
     Serial.println(config.config_str());
+    display.init();
     // 2.设置IO 电机&编码器
     motor.attachMotors(CONFIG_DEFAULT_MOTOR0_A_GPIO, CONFIG_DEFAULT_MOTOR0_B_GPIO, CONFIG_DEFAULT_MOTOR1_A_GPIO, CONFIG_DEFAULT_MOTOR1_B_GPIO);
     encoders[0].init(CONFIG_DEFAULT_ENCODER0_A_GPIO, CONFIG_DEFAULT_ENCODER0_B_GPIO, CONFIG_DEFAULT_PCNT_UTIL_00);
@@ -59,17 +59,34 @@ bool setup_fishbot()
     RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
     RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
     RCSOFTCHECK(rclc_executor_add_service(&executor, &config_service, &config_req, &config_res, callback_config_service_));
+    // 7.设置电压测量引脚
+    pinMode(34, INPUT);
+    analogReadResolution(12);
+    analogSetAttenuation(ADC_11db);
+    battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
+
     return true;
 }
 
 void loop_fishbot_control()
 {
     static float out_motor_speed[2];
+    static uint64_t last_update_info_time = millis();
     kinematics.update_motor_ticks(micros(), encoders[0].getTicks(), encoders[1].getTicks());
     out_motor_speed[0] = pid_controller[0].update(kinematics.motor_speed(0));
     out_motor_speed[1] = pid_controller[1].update(kinematics.motor_speed(1));
     motor.updateMotorSpeed(0, out_motor_speed[0]);
     motor.updateMotorSpeed(1, out_motor_speed[1]);
+    // 电量信息
+    if (out_motor_speed[0] == 0 && out_motor_speed[1] == 0)
+    {
+        battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
+    }
+    // 更新系统信息
+    display.updateBatteryInfo(battery_voltage);
+    display.updateBotAngular(kinematics.odom().angular_speed);
+    display.updateBotLinear(kinematics.odom().linear_speed);
+    display.updateDisplay();
 }
 
 void loop_fishbot_transport()

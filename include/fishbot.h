@@ -24,6 +24,7 @@
 #include "fishlog.h"
 #include "fishbot_config.h"
 #include "fishbot_display.h"
+#include "fishbot_utils.h"
 
 #define RCSOFTCHECK(fn)                                                                 \
     {                                                                                   \
