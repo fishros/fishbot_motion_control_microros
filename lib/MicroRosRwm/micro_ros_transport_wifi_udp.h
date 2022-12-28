@@ -10,21 +10,28 @@ extern "C"
     size_t platformio_transport_read_wifi_udp(struct uxrCustomTransport *transport, uint8_t *buf, size_t len, int timeout, uint8_t *err);
 }
 
-
-
 struct micro_ros_agent_locator
 {
     IPAddress address;
     int port;
 };
-static inline void set_microros_wifi_transports(const char *ssid,const char *pass, IPAddress agent_ip, uint16_t agent_port)
+
+static inline bool set_microros_wifi_transports(const char *ssid, const char *pass, IPAddress agent_ip, uint16_t agent_port)
 {
     WiFi.begin(ssid, pass);
-
-    while (WiFi.status() != WL_CONNECTED)
+    for (int i = 0; i < 5; i++)
     {
-        delay(500);
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            delay(500);
+        }
+        else
+        {
+            break;
+        }
     }
+    if (WiFi.status() != WL_CONNECTED)
+        return false;
 
     WiFi.setSleep(WIFI_PS_NONE);
 
@@ -39,4 +46,5 @@ static inline void set_microros_wifi_transports(const char *ssid,const char *pas
         platformio_transport_close_wifi_udp,
         platformio_transport_write_wifi_udp,
         platformio_transport_read_wifi_udp);
+    return true;
 }

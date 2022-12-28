@@ -3,65 +3,66 @@
 void FishBotConfig::init(String namespace_)
 {
     preferences.begin(CONFIG_NAME_NAMESPACE);
-    // preferences.clear();
-    // if (is_first_startup())
-    // {
+    if (is_first_startup())
+    {
+        fishlog_debug("config", "config default setting.");
 
-    preferences.putString("serial_baud", CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD);
-    preferences.putString("wifi_name", CONFIG_DEFAULT_WIFI_STA_SSID);
-    preferences.putString("wifi_pswk", CONFIG_DEFAULT_WIFI_STA_PSWK);
+        preferences.putString("serial_baud", CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD);
+        preferences.putString("wifi_name", CONFIG_DEFAULT_WIFI_STA_SSID);
+        preferences.putString("wifi_pswk", CONFIG_DEFAULT_WIFI_STA_PSWK);
 
-    preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
-    preferences.putString("udpserver_ip", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP);
-    preferences.putString("udpserver_port", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT);
+        preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
+        preferences.putString("udpserver_ip", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP);
+        preferences.putString("udpserver_port", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT);
 
-    preferences.putString("ros2_nodename", CONFIG_DEFAULT_ROS2_NODE_NAME);
-    preferences.putString("ros2_namespace", CONFIG_DEFAULT_ROS2_NAMESPACE);
-    preferences.putString("odom_topic", CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME);
-    preferences.putString("odom_frameid", CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID);
-    preferences.putString("odom_pub_period", CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD);
-    preferences.putString("twist_topic", CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME);
+        preferences.putString("ros2_nodename", CONFIG_DEFAULT_ROS2_NODE_NAME);
+        preferences.putString("ros2_namespace", CONFIG_DEFAULT_ROS2_NAMESPACE);
+        preferences.putString("odom_topic", CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME);
+        preferences.putString("odom_frameid", CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID);
+        preferences.putString("odom_pub_period", CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD);
+        preferences.putString("twist_topic", CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME);
 
-    preferences.putString("wheel_distance", CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE);
-    preferences.putString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO);
-    preferences.putString("pulse_ration", CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION);
-    preferences.putString("wheel_diameter", CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER);
+        preferences.putString("wheel_distance", CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE);
+        preferences.putString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO);
+        preferences.putString("pulse_ration", CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION);
+        preferences.putString("wheel_diameter", CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER);
 
-    preferences.putString("pid_kp", CONFIG_DEFAULT_MOTOR_PID_KP);
-    preferences.putString("pid_ki", CONFIG_DEFAULT_MOTOR_PID_KI);
-    preferences.putString("pid_kd", CONFIG_DEFAULT_MOTOR_PID_KD);
-    preferences.putString("pid_outlimit", CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH);
+        preferences.putString("pid_kp", CONFIG_DEFAULT_MOTOR_PID_KP);
+        preferences.putString("pid_ki", CONFIG_DEFAULT_MOTOR_PID_KI);
+        preferences.putString("pid_kd", CONFIG_DEFAULT_MOTOR_PID_KD);
+        preferences.putString("pid_outlimit", CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH);
 
-    preferences.putBool("is_first_startup", false);
-    // }
+        preferences.putBool("first_startup", false);
+    }
 }
 
 uint32_t FishBotConfig::is_first_startup()
 {
-    return preferences.getBool("is_first_startup", true);
+    fishlog_debug("config", "first_startup=%d", preferences.getBool("first_startup", true) ? 1 : 0);
+    return preferences.getBool("first_startup", true);
 }
 
 bool FishBotConfig::config(String key, String value)
 {
-    Serial.printf("save config key=%s,value=%s\n", key.c_str(), value.c_str());
+    fishlog_debug("config", "save config key=%s,value=%s\n", key.c_str(), value.c_str());
     return preferences.putString(key.c_str(), value);
 }
-bool FishBotConfig::config(String key, int32_t value)
-{
-    return preferences.putInt(key.c_str(), value);
-}
-bool FishBotConfig::config(String key, uint32_t value)
-{
-    return preferences.putUInt(key.c_str(), value);
-}
-bool FishBotConfig::config(String key, const float_t value)
-{
-    return preferences.putFloat(key.c_str(), value);
-}
-bool FishBotConfig::config(String key, const bool value)
-{
-    return preferences.putBool(key.c_str(), value);
-}
+// bool FishBotConfig::config(String key, int32_t value)
+// {
+//     return preferences.putInt(key.c_str(), value);
+// }
+// bool FishBotConfig::config(String key, uint32_t value)
+// {
+//     return preferences.putUInt(key.c_str(), value);
+// }
+// bool FishBotConfig::config(String key, const float_t value)
+// {
+//     return preferences.putFloat(key.c_str(), value);
+// }
+// bool FishBotConfig::config(String key, const bool value)
+// {
+//     return preferences.putBool(key.c_str(), value);
+// }
 
 String FishBotConfig::config_str()
 {
@@ -169,9 +170,9 @@ String FishBotConfig::wifi_ap_pswd()
     return "";
 }
 // MicroROS相关
-int32_t FishBotConfig::microros_transport_mode()
+String FishBotConfig::microros_transport_mode()
 {
-    return preferences.getString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE).toInt();
+    return preferences.getString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
 }
 String FishBotConfig::microros_uclient_server_ip()
 {

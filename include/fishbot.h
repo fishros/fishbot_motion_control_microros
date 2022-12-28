@@ -6,6 +6,8 @@
 #include <Esp32McpwmMotor.h>
 #include <PidController.h>
 #include <Kinematics.h>
+#include <BluetoothSerial.h>
+#include <OneButton.h>
 
 /* MicroROS */
 #include <micro_ros_platformio.h>
@@ -26,17 +28,18 @@
 #include "fishbot_display.h"
 #include "fishbot_utils.h"
 
-#define RCSOFTCHECK(fn)                                                                 \
-    {                                                                                   \
-        rcl_ret_t temp_rc = fn;                                                         \
-        if ((temp_rc != RCL_RET_OK))                                                    \
-        {                                                                               \
-            printf(                                                                     \
-                "Failed status on line %d: %d. Continuing.\n", __LINE__, (int)temp_rc); \
-        }                                                                               \
+#define RCSOFTCHECK(fn)                                                                           \
+    {                                                                                             \
+        rcl_ret_t temp_rc = fn;                                                                   \
+        if ((temp_rc != RCL_RET_OK))                                                              \
+        {                                                                                         \
+            fishlog_debug("ros2",                                                                 \
+                          "Failed status on line %d: %d. Continuing.\n", __LINE__, (int)temp_rc); \
+        }                                                                                         \
     }
 
 bool setup_fishbot();
+void setup_fishbot_transport();
 void loop_fishbot_control();
 void loop_fishbot_transport();
 

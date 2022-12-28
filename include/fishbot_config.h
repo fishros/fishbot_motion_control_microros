@@ -4,23 +4,24 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <WiFi.h>
+#include "fishlog.h"
 
 /*=========================================常量值定义========================================*/
-#define CONFIG_TRANSPORT_MODE_SERIAL 0          // 串口模式，0
-#define CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT 1 // UDP客户端模式，1
+#define CONFIG_TRANSPORT_MODE_SERIAL "serial"              // 串口模式，0
+#define CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT "udp_client" // UDP客户端模式，1
 
 /*=========================================默认值定义=====================================*/
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
-#define CONFIG_DEFAULT_TRANSPORT_MODE "0"                            // 默认传输模式-串口模式
-#define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 115200
-#define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "115200"
+#define CONFIG_DEFAULT_TRANSPORT_MODE "serial"                       // 默认传输模式-串口模式
+#define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 921600
+#define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
 //------------------------------------WIFI SSID-----------------------------------------
 #define CONFIG_DEFAULT_WIFI_STA_SSID "m3"
 #define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
 
-//--------------------------------------电机相关配置--------------------------------------- 
+//--------------------------------------电机相关配置---------------------------------------
 #define CONFIG_DEFAULT_MOTOR_PID_KP "0.625"
 #define CONFIG_DEFAULT_MOTOR_PID_KI "0.125"
 #define CONFIG_DEFAULT_MOTOR_PID_KD "0.0"
@@ -128,10 +129,10 @@ public:
     uint32_t is_first_startup();
 
     bool config(String key, String value);
-    bool config(String key, int32_t value);
-    bool config(String key, uint32_t value);
-    bool config(String key, const float_t value);
-    bool config(String key, const bool value);
+    // bool config(String key, int32_t value);
+    // bool config(String key, uint32_t value);
+    // bool config(String key, const float_t value);
+    // bool config(String key, const bool value);
 
     String config_str();
     String board_name();
@@ -142,7 +143,7 @@ public:
     String wifi_ap_ssid();
     String wifi_ap_pswd();
     // MicroROS相关
-    int32_t microros_transport_mode();
+    String microros_transport_mode();
     String microros_uclient_server_ip();
     uint32_t microros_uclient_server_port();
     // ROS2相关

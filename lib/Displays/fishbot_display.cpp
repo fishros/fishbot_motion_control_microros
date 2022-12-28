@@ -8,9 +8,12 @@ void FishBotDisplay::init()
     _display.clearDisplay();                    // 清空屏幕
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
-    _display.setCursor(16, 16);                 // 设置开始显示文字的坐标
+    _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
     _display.println("  [fishbot-v1.0.0]");     // 输出的字符
-    _display.display();                         // 使更改的显示生效
+    _display.println("");
+    _display.println("...");
+    _display.println("connect microros agent...");
+    _display.display();
 }
 
 FishBotDisplay::FishBotDisplay()
@@ -21,17 +24,20 @@ void FishBotDisplay::updateDisplay()
 {
     if (millis() - last_update_time > update_interval)
     {
-
+        String timenow = String(hour()) + ":" + twoDigits(minute()) + ":" + twoDigits(second());
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
         _display.println("   -fishbot-v1.0.0-");
-        _display.println("");
-        _display.print("voltage:");
+        _display.print("time:");
+        _display.println(timenow);
+        _display.print("microros:");
+        _display.println(mode_);
+        _display.print("voltage :");
         _display.println(battery_info_);
-        _display.print("linear :");
+        _display.print("linear  :");
         _display.println(bot_linear_);
-        _display.print("angular:");
+        _display.print("angular :");
         _display.println(bot_angular_);
         _display.display();
     }
@@ -51,4 +57,44 @@ void FishBotDisplay::updateBotAngular(float &bot_angular)
 void FishBotDisplay::updateBotLinear(float &bot_linear)
 {
     bot_linear_ = bot_linear;
+}
+void FishBotDisplay::updateTransMode(String mode)
+{
+    mode_ = mode;
+}
+void FishBotDisplay::updateCurrentTime(int64_t current_time_)
+{
+    current_time = current_time_;
+}
+String FishBotDisplay::twoDigits(int digits)
+{
+    if (digits < 10)
+    {
+        String i = '0' + String(digits);
+        return i;
+    }
+    else
+    {
+        return String(digits);
+    }
+}
+
+void FishBotDisplay::updateStartupInfo()
+{
+    String timenow = String(hour()) + ":" + twoDigits(minute()) + ":" + twoDigits(second());
+    last_update_time = millis();
+    _display.clearDisplay();
+    _display.setCursor(0, 0);
+    _display.println("   -fishbot-v1.0.0-");
+    _display.print("time:");
+    _display.println(timenow);
+    _display.print("microros:");
+    _display.println(mode_);
+    _display.print("voltage :");
+    _display.println(battery_info_);
+    _display.print("linear  :");
+    _display.println(bot_linear_);
+    _display.print("angular :");
+    _display.println(bot_angular_);
+    _display.display();
 }

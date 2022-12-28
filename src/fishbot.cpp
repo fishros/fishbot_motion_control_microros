@@ -7,7 +7,6 @@ char odom_frame_id[16];
 fishbot_interfaces__srv__FishBotConfig_Response config_res;
 fishbot_interfaces__srv__FishBotConfig_Request config_req;
 static micro_ros_utilities_memory_conf_t conf = {0};
-static char config_srv_memory[512];
 static int keyvalue_capacity = 100;
 
 /*==================MicroROS订阅发布者服务========================*/
@@ -30,16 +29,36 @@ Esp32McpwmMotor motor;
 Kinematics kinematics;
 FishBotConfig config;
 FishBotDisplay display;
+BluetoothSerial SerialBT;
 float battery_voltage;
+OneButton button(0, true);
+
+void doubleClick()
+{
+    fishlog_debug("key", "doubleClick() detected.");
+    if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT)
+    {
+        config.config("microros_mode", "serial");
+    }
+    else
+    {
+        config.config("microros_mode", "udp_client");
+    }
+    esp_restart();
+}
 
 bool setup_fishbot()
 {
     // 1.初始化
+    Serial.begin(115200);
+    fishlog_set_target(Serial);
     config.init(CONFIG_NAME_NAMESPACE);
-    Serial.begin(CONFIG_DEFAULT_SERIAL_SERIAL_BAUD);
     Serial.println(FIRST_START_TIP);
     Serial.println(config.config_str());
     display.init();
+    display.updateTransMode(config.microros_transport_mode());
+    display.updateStartupInfo();
+    button.attachDoubleClick(doubleClick);
     // 2.设置IO 电机&编码器
     motor.attachMotors(CONFIG_DEFAULT_MOTOR0_A_GPIO, CONFIG_DEFAULT_MOTOR0_B_GPIO, CONFIG_DEFAULT_MOTOR1_A_GPIO, CONFIG_DEFAULT_MOTOR1_B_GPIO);
     encoders[0].init(CONFIG_DEFAULT_ENCODER0_A_GPIO, CONFIG_DEFAULT_ENCODER0_B_GPIO, CONFIG_DEFAULT_PCNT_UTIL_00);
@@ -53,19 +72,35 @@ bool setup_fishbot()
     kinematics.set_motor_param(0, config.kinematics_reducation_ration(), config.kinematics_pulse_ration(), config.kinematics_wheel_diameter());
     kinematics.set_motor_param(1, config.kinematics_reducation_ration(), config.kinematics_pulse_ration(), config.kinematics_wheel_diameter());
     kinematics.set_kinematic_param(config.kinematics_wheel_distance());
-    // 5.设置microRos
-    microros_setup_transport_udp_client_();
-    // 6.添加/cmd_vel话题订阅
-    RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
-    RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
-    RCSOFTCHECK(rclc_executor_add_service(&executor, &config_service, &config_req, &config_res, callback_config_service_));
     // 7.设置电压测量引脚
     pinMode(34, INPUT);
     analogReadResolution(12);
     analogSetAttenuation(ADC_11db);
     battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
-
     return true;
+}
+
+void setup_fishbot_transport()
+{
+    // 5.设置microRos
+    bool setup_success = true;
+    if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT)
+    {
+        fishlog_set_target(Serial);
+        setup_success = microros_setup_transport_udp_client_();
+        display.updateTransMode("udp_client");
+    }
+    if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_SERIAL)
+    {
+        SerialBT.begin(config.board_name());
+        fishlog_set_target(SerialBT);
+        microros_setup_transport_serial_();
+        display.updateTransMode("serial");
+    }
+    // 6.添加/cmd_vel话题订阅
+    RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
+    RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
+    RCSOFTCHECK(rclc_executor_add_service(&executor, &config_service, &config_req, &config_res, callback_config_service_));
 }
 
 void loop_fishbot_control()
@@ -77,16 +112,20 @@ void loop_fishbot_control()
     out_motor_speed[1] = pid_controller[1].update(kinematics.motor_speed(1));
     motor.updateMotorSpeed(0, out_motor_speed[0]);
     motor.updateMotorSpeed(1, out_motor_speed[1]);
+
     // 电量信息
     if (out_motor_speed[0] == 0 && out_motor_speed[1] == 0)
     {
         battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
     }
+
     // 更新系统信息
     display.updateBatteryInfo(battery_voltage);
     display.updateBotAngular(kinematics.odom().angular_speed);
     display.updateBotLinear(kinematics.odom().linear_speed);
+    display.updateCurrentTime(rmw_uros_epoch_millis());
     display.updateDisplay();
+    button.tick();
 }
 
 void loop_fishbot_transport()
@@ -94,8 +133,8 @@ void loop_fishbot_transport()
     if (!rmw_uros_epoch_synchronized())
     {
         RCSOFTCHECK(rmw_uros_sync_session(1000));
-        Serial.print("current_time:");
-        Serial.println(rmw_uros_epoch_millis());
+        setTime(rmw_uros_epoch_millis() / 1000 + SECS_PER_HOUR * 8);
+        fishlog_debug("fishbot", "current_time:%ld", rmw_uros_epoch_millis());
         delay(10);
         return;
     }
@@ -124,7 +163,11 @@ bool microros_setup_transport_udp_client_()
 
     IPAddress agent_ip;
     agent_ip.fromString(ip);
-    set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port);
+    if (!set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port))
+    {
+        return false;
+    }
+
     delay(500);
     allocator = rcl_get_default_allocator();
     RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
@@ -151,6 +194,46 @@ bool microros_setup_transport_udp_client_()
 
 bool microros_setup_transport_serial_()
 {
+    String nodename = config.ros2_nodename();
+    String ros2namespace = config.ros2_namespace();
+    String twist_topic = config.ros2_twist_topic_name();
+    String odom_topic = config.ros2_odom_topic_name();
+    String odom_frameid_str = config.ros2_odom_frameid();
+    odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    const unsigned int timer_timeout = config.odom_publish_period();
+    // 初始化数据接收配置
+    config_req.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_req.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_res.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    config_res.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
+    uint32_t serial_baudraate = config.serial_baudrate();
+    Serial.updateBaudRate(serial_baudraate);
+    if (!set_microros_serial_transports(Serial))
+    {
+        return false;
+    }
+
+    delay(500);
+    allocator = rcl_get_default_allocator();
+    RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
+    RCSOFTCHECK(rclc_publisher_init_best_effort(
+        &odom_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
+        odom_topic.c_str()));
+    RCSOFTCHECK(rclc_subscription_init_default(
+        &twist_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        twist_topic.c_str()));
+    RCSOFTCHECK(rclc_service_init_default(
+        &config_service,
+        &node,
+        ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
+        "/fishbot_config"));
+    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
+    RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     return true;
 }
 
@@ -190,7 +273,7 @@ void callback_config_service_(const void *req, void *res)
     fishbot_interfaces__srv__FishBotConfig_Response *res_in = (fishbot_interfaces__srv__FishBotConfig_Response *)res;
     String recv_key(req_in->key.data);
     String recv_value(req_in->value.data);
-    Serial.printf("recv service key=%s,value=%s\n", req_in->key.data, req_in->value.data);
+    fishlog_debug("fishbot", "recv service key=%s,value=%s\n", req_in->key.data, req_in->value.data);
     config.config(recv_key, recv_value);
     // PID相关配置
     if (recv_key.startsWith("pid_"))
@@ -210,7 +293,7 @@ void callback_config_service_(const void *req, void *res)
                         "restart_task", 1024, NULL, 1, NULL);
         }
     }
-
+    fishlog_debug("fishbot", "current_str:%s", config.config_str().c_str());
     sprintf(res_in->key.data, "%s", req_in->key.data);
     sprintf(res_in->value.data, "%s", req_in->key.data);
 }
