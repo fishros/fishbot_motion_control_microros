@@ -16,7 +16,7 @@ struct micro_ros_agent_locator
     int port;
 };
 
-static inline bool set_microros_wifi_transports(const char *ssid, const char *pass, IPAddress agent_ip, uint16_t agent_port)
+static bool set_microros_wifi_transports(const char *ssid, const char *pass, IPAddress agent_ip, uint16_t agent_port)
 {
     WiFi.begin(ssid, pass);
     for (int i = 0; i < 5; i++)
@@ -30,8 +30,10 @@ static inline bool set_microros_wifi_transports(const char *ssid, const char *pa
             break;
         }
     }
-    if (WiFi.status() != WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED){
+        Serial.println("wifi failed!");
         return false;
+    }
 
     WiFi.setSleep(WIFI_PS_NONE);
 

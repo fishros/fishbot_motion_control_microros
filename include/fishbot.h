@@ -56,9 +56,12 @@
 bool setup_fishbot();
 bool setup_fishbot_transport();
 
+// 创建和销毁fishbot传输配置
+bool create_fishbot_transport();
+bool destory_fishbot_transport();
+
 void loop_fishbot_control();
 void loop_fishbot_transport();
-bool destory_fishbot_transport();
 
 bool microros_setup_transport_udp_client_();
 bool microros_setup_transport_serial_();

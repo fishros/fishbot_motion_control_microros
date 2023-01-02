@@ -8,7 +8,7 @@ extern "C"
 	size_t platformio_transport_read_serial(struct uxrCustomTransport *transport, uint8_t *buf, size_t len, int timeout, uint8_t *err);
 }
 
-static inline bool set_microros_serial_transports(Stream &stream)
+static bool set_microros_serial_transports(Stream &stream)
 {
 	rmw_uros_set_custom_transport(
 		true,

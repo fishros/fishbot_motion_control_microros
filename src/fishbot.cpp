@@ -112,7 +112,6 @@ static void deal_command(char key[32], char value[32])
 
 bool setup_fishbot_transport()
 {
-    // 5.设置microRos
     bool setup_success = true;
     if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT)
     {
@@ -127,7 +126,40 @@ bool setup_fishbot_transport()
         microros_setup_transport_serial_();
         display.updateTransMode("serial");
     }
-    // 6.添加/cmd_vel话题订阅
+
+    return true;
+}
+
+bool create_fishbot_transport()
+{
+    String nodename = config.ros2_nodename();
+    String ros2namespace = config.ros2_namespace();
+    String twist_topic = config.ros2_twist_topic_name();
+    String odom_topic = config.ros2_odom_topic_name();
+    String odom_frameid_str = config.ros2_odom_frameid();
+    odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    const unsigned int timer_timeout = config.odom_publish_period();
+    delay(500);
+    allocator = rcl_get_default_allocator();
+    RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
+    RCSOFTCHECK(rclc_publisher_init_best_effort(
+        &odom_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
+        odom_topic.c_str()));
+    RCSOFTCHECK(rclc_subscription_init_default(
+        &twist_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        twist_topic.c_str()));
+    RCSOFTCHECK(rclc_service_init_default(
+        &config_service,
+        &node,
+        ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
+        "/fishbot_config"));
+    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
+    RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
     RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
     RCSOFTCHECK(rclc_executor_add_service(&executor, &config_service, &config_req, &config_res, callback_config_service_));
@@ -199,7 +231,7 @@ void loop_fishbot_transport()
         // fishlog_debug("ros2", "current state2:%d", state);
         break;
     case AGENT_AVAILABLE:
-        state = (true == setup_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
+        state = (true == create_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
         if (state == WAITING_AGENT)
         {
             destory_fishbot_transport();
@@ -244,13 +276,6 @@ bool microros_setup_transport_udp_client_()
     String password = config.wifi_sta_pswd();
     uint32_t agent_port = config.microros_uclient_server_port();
 
-    String nodename = config.ros2_nodename();
-    String ros2namespace = config.ros2_namespace();
-    String twist_topic = config.ros2_twist_topic_name();
-    String odom_topic = config.ros2_odom_topic_name();
-    String odom_frameid_str = config.ros2_odom_frameid();
-    odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
-    const unsigned int timer_timeout = config.odom_publish_period();
     // 初始化数据接收配置
     config_req.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
     config_req.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
@@ -263,28 +288,6 @@ bool microros_setup_transport_udp_client_()
     {
         return false;
     }
-
-    delay(500);
-    allocator = rcl_get_default_allocator();
-    RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
-    RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
-    RCSOFTCHECK(rclc_publisher_init_best_effort(
-        &odom_publisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
-        odom_topic.c_str()));
-    RCSOFTCHECK(rclc_subscription_init_default(
-        &twist_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        twist_topic.c_str()));
-    RCSOFTCHECK(rclc_service_init_default(
-        &config_service,
-        &node,
-        ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
-        "/fishbot_config"));
-    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
-    RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     return true;
 }
 
@@ -308,28 +311,6 @@ bool microros_setup_transport_serial_()
     {
         return false;
     }
-
-    delay(500);
-    allocator = rcl_get_default_allocator();
-    RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
-    RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
-    RCSOFTCHECK(rclc_publisher_init_best_effort(
-        &odom_publisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
-        odom_topic.c_str()));
-    RCSOFTCHECK(rclc_subscription_init_default(
-        &twist_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        twist_topic.c_str()));
-    RCSOFTCHECK(rclc_service_init_default(
-        &config_service,
-        &node,
-        ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
-        "/fishbot_config"));
-    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
-    RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     return true;
 }
 
