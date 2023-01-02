@@ -71,10 +71,10 @@ public:
 
 #define fishlog_set_target(stream) FishLog::getInstance().setLogTarget(stream);
 
-#define fishlog_debug(log_name, fmt, arg...)                                              \
-    do                                                                                    \
-    {                                                                                     \
-        FishLog::getInstance().log(LOG_LEVEL_DEBUG, "[%d]>D:" fmt "\n", millis(), ##arg); \
+#define fishlog_debug(log_name, fmt, arg...)                                                           \
+    do                                                                                                 \
+    {                                                                                                  \
+        FishLog::getInstance().log(LOG_LEVEL_DEBUG, "[%d]@%d>D:" fmt "\n", millis(), __LINE__, ##arg); \
     } while (0);
 
 #endif // __FISHLOG_H__

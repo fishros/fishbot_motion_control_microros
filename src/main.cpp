@@ -2,7 +2,6 @@
 
 void fishbot_loop_transport_task(void *param)
 {
-  setup_fishbot_transport();
   while (true)
   {
     loop_fishbot_transport();

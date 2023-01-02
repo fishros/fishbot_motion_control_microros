@@ -18,7 +18,7 @@
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
 //------------------------------------WIFI SSID-----------------------------------------
-#define CONFIG_DEFAULT_WIFI_STA_SSID "m3"
+#define CONFIG_DEFAULT_WIFI_STA_SSID "m5"
 #define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
 
 //--------------------------------------电机相关配置---------------------------------------
@@ -88,8 +88,8 @@
 #define CONFIG_NAME_TRANSPORT_MODE_WIFI_SERVER_PORT "server_port"
 
 // WIFI名称
-#define CONFIG_NAME_WIFI_STA_SSID_NAME "wifi_name"
-#define CONFIG_NAME_WIFI_STA_PSWK_NAME "wifi_pswk"
+#define CONFIG_NAME_WIFI_STA_SSID_NAME "wifi_ssid"
+#define CONFIG_NAME_WIFI_STA_PSWK_NAME "wifi_pswd"
 #define CONFIG_NAME_IS_FIRST_STARTUP "first_startup"
 
 // ROS2相关
@@ -117,6 +117,13 @@
 #define CONFIG_NAME_KINEMATIC_WHEEL_DISTANCE "wheel_dist"
 
 #define FIRST_START_TIP "=================================================\n     wwww.fishros.com        \nfishbot-motion-control-v1.0.0\n=================================================\n"
+
+typedef enum
+{
+    CONFIG_PARSE_ERROR = -1,
+    CONFIG_PARSE_NODATA = 0,
+    CONFIG_PARSE_OK = 1,
+}fishbot_config_status;
 
 class FishBotConfig
 {
@@ -162,6 +169,9 @@ public:
     float kinematics_pid_ki();
     float kinematics_pid_kd();
     float kinematics_pid_out_limit();
+
+    int8_t loop_config_uart(int c, char result[][32]);
+    int8_t split_str(const char *line, char result[][32]);
 
     FishBotConfig(/* args */) = default;
     ~FishBotConfig() = default;

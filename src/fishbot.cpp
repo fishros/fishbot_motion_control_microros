@@ -21,6 +21,13 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
+enum states
+{
+    WAITING_AGENT,
+    AGENT_AVAILABLE,
+    AGENT_CONNECTED,
+    AGENT_DISCONNECTED
+} state;
 
 /*========================FishBot控制相关====================*/
 PidController pid_controller[2];
@@ -80,7 +87,30 @@ bool setup_fishbot()
     return true;
 }
 
-void setup_fishbot_transport()
+static void deal_command(char key[32], char value[32])
+{
+    if (strcmp(key, "command") == 0)
+    {
+        if (strcmp(value, "restart") == 0)
+        {
+            esp_restart();
+        }
+        else if (strcmp(value, "read_config") == 0)
+        {
+            Serial.print(config.config_str());
+        }
+        return;
+    }
+    else
+    {
+        String recv_key(key);
+        String recv_value(value);
+        config.config(recv_key, recv_value);
+        Serial.print("$result=ok\n");
+    }
+}
+
+bool setup_fishbot_transport()
 {
     // 5.设置microRos
     bool setup_success = true;
@@ -101,6 +131,22 @@ void setup_fishbot_transport()
     RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
     RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
     RCSOFTCHECK(rclc_executor_add_service(&executor, &config_service, &config_req, &config_res, callback_config_service_));
+    return true;
+}
+
+bool destory_fishbot_transport()
+{
+    rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
+    (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
+
+    RCSOFTCHECK(rcl_publisher_fini(&odom_publisher, &node));
+    RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
+    RCSOFTCHECK(rcl_service_fini(&config_service, &node));
+    RCSOFTCHECK(rcl_timer_fini(&timer));
+    RCSOFTCHECK(rclc_executor_fini(&executor));
+    RCSOFTCHECK(rcl_node_fini(&node));
+    rclc_support_fini(&support);
+    return true;
 }
 
 void loop_fishbot_control()
@@ -130,15 +176,65 @@ void loop_fishbot_control()
 
 void loop_fishbot_transport()
 {
-    if (!rmw_uros_epoch_synchronized())
+    static char result[10][32];
+    static int config_result;
+    while (Serial.available())
     {
-        RCSOFTCHECK(rmw_uros_sync_session(1000));
-        setTime(rmw_uros_epoch_millis() / 1000 + SECS_PER_HOUR * 8);
-        fishlog_debug("fishbot", "current_time:%ld", rmw_uros_epoch_millis());
-        delay(10);
-        return;
+        int c = Serial.read();
+        config_result = config.loop_config_uart(c, result);
+        if (config_result == CONFIG_PARSE_OK)
+        {
+            deal_command(result[0], result[1]);
+        }
+        else if (config_result == CONFIG_PARSE_ERROR)
+        {
+            Serial.print("$result=error parse\n");
+        }
     }
-    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+
+    switch (state)
+    {
+    case WAITING_AGENT:
+        EXECUTE_EVERY_N_MS(500, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+        // fishlog_debug("ros2", "current state2:%d", state);
+        break;
+    case AGENT_AVAILABLE:
+        state = (true == setup_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
+        if (state == WAITING_AGENT)
+        {
+            destory_fishbot_transport();
+        };
+        break;
+    case AGENT_CONNECTED:
+        EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+        if (state == AGENT_CONNECTED)
+        {
+            if (!rmw_uros_epoch_synchronized())
+            {
+                RCSOFTCHECK(rmw_uros_sync_session(1000));
+                if (rmw_uros_epoch_synchronized())
+                {
+                    setTime(rmw_uros_epoch_millis() / 1000 + SECS_PER_HOUR * 8);
+                    fishlog_debug("fishbot", "current_time:%ld", rmw_uros_epoch_millis());
+                }
+                delay(10);
+                return;
+            }
+            RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+        }
+        break;
+    case AGENT_DISCONNECTED:
+        destory_fishbot_transport();
+        state = WAITING_AGENT;
+        break;
+    default:
+        break;
+    }
+
+    if (state != AGENT_CONNECTED)
+    {
+        delay(10);
+    }
 }
 
 bool microros_setup_transport_udp_client_()
