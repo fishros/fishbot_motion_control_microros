@@ -1,3 +1,13 @@
+/**
+ * @file fishbot_config.h
+ * @author fishros (fishros@foxmail.com)
+ * @brief 机器人配置汇总
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #ifndef __FISHBOT_CONFIG_H__
 #define __FISHBOT_CONFIG_H__
 
@@ -13,7 +23,7 @@
 /*=========================================默认值定义=====================================*/
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
-#define CONFIG_DEFAULT_TRANSPORT_MODE "serial"                       // 默认传输模式-串口模式
+#define CONFIG_DEFAULT_TRANSPORT_MODE "udp_client"                   // 默认传输模式-udp_client模式
 #define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 921600
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
@@ -123,7 +133,7 @@ typedef enum
     CONFIG_PARSE_ERROR = -1,
     CONFIG_PARSE_NODATA = 0,
     CONFIG_PARSE_OK = 1,
-}fishbot_config_status;
+} fishbot_config_status;
 
 class FishBotConfig
 {

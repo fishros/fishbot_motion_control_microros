@@ -1,3 +1,13 @@
+/**
+ * @file fishbot_config.cpp
+ * @author fishros (fishros@foxmail.com)
+ * @brief 机器人配置处理类
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #include "fishbot_config.h"
 
 void FishBotConfig::init(String namespace_)
@@ -9,7 +19,7 @@ void FishBotConfig::init(String namespace_)
 
         preferences.putString("serial_baud", CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD);
         preferences.putString("wifi_name", CONFIG_DEFAULT_WIFI_STA_SSID);
-        preferences.putString("wifi_pswk", CONFIG_DEFAULT_WIFI_STA_PSWK);
+        preferences.putString("wifi_pswd", CONFIG_DEFAULT_WIFI_STA_PSWK);
 
         preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
         preferences.putString("udpserver_ip", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP);

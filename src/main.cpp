@@ -1,3 +1,13 @@
+/**
+ * @file main.cpp
+ * @author fishros (fishros@foxmail.com)
+ * @brief 主函数部分
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #include <Arduino.h>
 #include "fishbot.h"
 

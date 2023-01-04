@@ -1,3 +1,13 @@
+/**
+ * @file fishbot.h
+ * @author fishros (fishros@foxmail.com)
+ * @brief FishBot核心类相关定义
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #ifndef __FISHBOT_H__
 #define __FISHBOT_H__
 /* ESP32 */

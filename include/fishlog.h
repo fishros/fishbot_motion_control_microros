@@ -1,3 +1,13 @@
+/**
+ * @file fishlog.h
+ * @author fishros (fishros@foxmail.com)
+ * @brief 日志管理类
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #ifndef __FISHLOG_H__
 #define __FISHLOG_H__
 

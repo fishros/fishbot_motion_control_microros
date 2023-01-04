@@ -1,3 +1,13 @@
+/**
+ * @file fishbot.cpp
+ * @author fishros (fishros@foxmail.com)
+ * @brief 核心文件，硬件控制以及通讯控制
+ * @version V1.0.0
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ * 
+ */
 #include "fishbot.h"
 
 /*==================MicroROS消息============================*/
@@ -324,6 +334,7 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
         odom_msg.header.stamp.sec = stamp * 1e-3;
         odom_msg.header.stamp.nanosec = stamp - odom_msg.header.stamp.sec * 1000;
         odom_msg.pose.pose.position.x = odom.x;
+        odom_msg.pose.pose.position.y = odom.y;
         odom_msg.pose.pose.orientation.w = odom.quaternion.w;
         odom_msg.pose.pose.orientation.x = odom.quaternion.x;
         odom_msg.pose.pose.orientation.y = odom.quaternion.y;
