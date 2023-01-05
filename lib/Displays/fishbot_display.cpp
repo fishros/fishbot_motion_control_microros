@@ -1,3 +1,13 @@
+/**
+ * @file fishbot_display.cpp
+ * @author fishros (fishros@foxmail.com)
+ * @brief FishBotOLED显示控制类
+ * @version V1.0.0
+ * @date 2023-01-05
+ *
+ * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
+ *
+ */
 #include "fishbot_display.h"
 
 void FishBotDisplay::init()
@@ -29,10 +39,12 @@ void FishBotDisplay::updateDisplay()
         _display.clearDisplay();
         _display.setCursor(0, 0);
         _display.println("   -fishbot-v1.0.0-");
-        _display.print("time:");
-        _display.println(timenow);
         _display.print("microros:");
         _display.println(mode_);
+        _display.print("time :");
+        _display.println(timenow);
+        _display.print("ip   :");
+        _display.println(ip_);
         _display.print("voltage :");
         _display.println(battery_info_);
         _display.print("linear  :");
@@ -62,6 +74,10 @@ void FishBotDisplay::updateTransMode(String mode)
 {
     mode_ = mode;
 }
+void FishBotDisplay::updateWIFIIp(String ip)
+{
+    ip_ = ip;
+}
 void FishBotDisplay::updateCurrentTime(int64_t current_time_)
 {
     current_time = current_time_;
@@ -86,15 +102,9 @@ void FishBotDisplay::updateStartupInfo()
     _display.clearDisplay();
     _display.setCursor(0, 0);
     _display.println("   -fishbot-v1.0.0-");
-    _display.print("time:");
-    _display.println(timenow);
     _display.print("microros:");
     _display.println(mode_);
     _display.print("voltage :");
     _display.println(battery_info_);
-    _display.print("linear  :");
-    _display.println(bot_linear_);
-    _display.print("angular :");
-    _display.println(bot_angular_);
     _display.display();
 }
