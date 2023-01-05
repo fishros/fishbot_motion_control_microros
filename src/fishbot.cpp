@@ -206,7 +206,10 @@ void loop_fishbot_control()
     {
         battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
     }
-
+    if(WiFi.isConnected())
+    {
+        display.updateWIFIIp(WiFi.localIP().toString());
+    }
     // 更新系统信息
     display.updateBatteryInfo(battery_voltage);
     display.updateBotAngular(kinematics.odom().angular_speed);

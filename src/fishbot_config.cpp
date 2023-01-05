@@ -18,7 +18,7 @@ void FishBotConfig::init(String namespace_)
         fishlog_debug("config", "config default setting.");
 
         preferences.putString("serial_baud", CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD);
-        preferences.putString("wifi_name", CONFIG_DEFAULT_WIFI_STA_SSID);
+        preferences.putString("wifi_ssid", CONFIG_DEFAULT_WIFI_STA_SSID);
         preferences.putString("wifi_pswd", CONFIG_DEFAULT_WIFI_STA_PSWK);
 
         preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
@@ -73,13 +73,43 @@ bool FishBotConfig::config(String key, String value)
 // {
 //     return preferences.putBool(key.c_str(), value);
 // }
+/*
+
+        preferences.putString("serial_baud", CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD);
+        preferences.putString("wifi_ssid", CONFIG_DEFAULT_WIFI_STA_SSID);
+        preferences.putString("wifi_pswd", CONFIG_DEFAULT_WIFI_STA_PSWK);
+
+        preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
+        preferences.putString("udpserver_ip", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP);
+        preferences.putString("udpserver_port", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT);
+
+        preferences.putString("ros2_nodename", CONFIG_DEFAULT_ROS2_NODE_NAME);
+        preferences.putString("ros2_namespace", CONFIG_DEFAULT_ROS2_NAMESPACE);
+        preferences.putString("odom_topic", CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME);
+        preferences.putString("odom_frameid", CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID);
+        preferences.putString("odom_pub_period", CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD);
+        preferences.putString("twist_topic", CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME);
+
+        preferences.putString("wheel_distance", CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE);
+        preferences.putString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO);
+        preferences.putString("pulse_ration", CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION);
+        preferences.putString("wheel_diameter", CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER);
+
+        preferences.putString("pid_kp", CONFIG_DEFAULT_MOTOR_PID_KP);
+        preferences.putString("pid_ki", CONFIG_DEFAULT_MOTOR_PID_KI);
+        preferences.putString("pid_kd", CONFIG_DEFAULT_MOTOR_PID_KD);
+        preferences.putString("pid_outlimit", CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH);
+
+        preferences.putBool("first_startup", false);
+
+*/
 
 String FishBotConfig::config_str()
 {
     String config("");
     config.concat("$first_startup=");
     config.concat(is_first_startup());
-    config.concat("\n$serial_baudrate=");
+    config.concat("\n$serial_baud=");
     config.concat(serial_baudrate());
     config.concat("\n$wifi_ssid=");
     config.concat(wifi_sta_ssid());
@@ -92,13 +122,13 @@ String FishBotConfig::config_str()
     config.concat("\n$wifi_ap_pswd=");
     config.concat(wifi_ap_pswd());
 
-    config.concat("\n$microros_transport_mode=");
+    config.concat("\n$microros_mode=");
     config.concat(microros_transport_mode());
 
-    config.concat("\n$microros_uclient_server_ip=");
+    config.concat("\n$udpserver_ip=");
     config.concat(microros_uclient_server_ip());
 
-    config.concat("\n$microros_uclient_server_port=");
+    config.concat("\n$udpserver_port=");
     config.concat(microros_uclient_server_port());
 
     config.concat("\n$ros2_nodename=");
@@ -107,40 +137,40 @@ String FishBotConfig::config_str()
     config.concat("\n$ros2_namespace=");
     config.concat(ros2_namespace());
 
-    config.concat("\n$ros2_odom_topic_name=");
+    config.concat("\n$odom_topic=");
     config.concat(ros2_odom_topic_name());
 
-    config.concat("\n$ros2_odom_frameid=");
+    config.concat("\n$odom_frameid=");
     config.concat(ros2_odom_frameid());
 
-    config.concat("\n$ros2_twist_topic_name=");
+    config.concat("\n$twist_topic=");
     config.concat(ros2_twist_topic_name());
 
-    config.concat("\n$odom_publish_period=");
+    config.concat("\n$odom_pub_period=");
     config.concat(odom_publish_period());
 
-    config.concat("\n$kinematics_reducation_ration=");
+    config.concat("\n$reducate_ration=");
     config.concat(kinematics_reducation_ration());
 
-    config.concat("\n$kinematics_pulse_ration=");
+    config.concat("\n$pulse_ration=");
     config.concat(kinematics_pulse_ration());
 
-    config.concat("\n$kinematics_wheel_diameter=");
+    config.concat("\n$wheel_diameter=");
     config.concat(kinematics_wheel_diameter());
 
-    config.concat("\n$kinematics_wheel_distance=");
+    config.concat("\n$wheel_distance=");
     config.concat(kinematics_wheel_distance());
 
-    config.concat("\n$kinematics_pid_kp=");
+    config.concat("\n$pid_kp=");
     config.concat(kinematics_pid_kp());
 
-    config.concat("\n$kinematics_pid_ki=");
+    config.concat("\n$pid_ki=");
     config.concat(kinematics_pid_ki());
 
-    config.concat("\n$kinematics_pid_kd=");
+    config.concat("\n$pid_kd=");
     config.concat(kinematics_pid_kd());
 
-    config.concat("\n$kinematics_pid_out_limit=");
+    config.concat("\n$pid_outlimit=");
     config.concat(kinematics_pid_out_limit());
 
     config.concat("\n$board=motion_board");
