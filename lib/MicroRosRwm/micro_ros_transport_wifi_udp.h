@@ -16,9 +16,15 @@ struct micro_ros_agent_locator
     int port;
 };
 
-static bool set_microros_wifi_transports(const char *ssid, const char *pass, IPAddress agent_ip, uint16_t agent_port)
+static bool set_microros_wifi_transports(const char *ssid, const char *pswd, IPAddress agent_ip, uint16_t agent_port, String device_name)
 {
-    WiFi.begin(ssid, pass);
+    if (!WiFi.setHostname(device_name.c_str()))
+    {
+        Serial.println("Hostname failed to configure");
+    }
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, pswd);
+    WiFi.useStaticBuffers(true);
     WiFi.setAutoReconnect(true);
     for (int i = 0; i < 4; i++)
     {
@@ -31,7 +37,8 @@ static bool set_microros_wifi_transports(const char *ssid, const char *pass, IPA
             break;
         }
     }
-    if (WiFi.status() != WL_CONNECTED){
+    if (WiFi.status() != WL_CONNECTED)
+    {
         Serial.println("wifi connected failed!");
     }
 

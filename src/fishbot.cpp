@@ -4,9 +4,9 @@
  * @brief 核心文件，硬件控制以及通讯控制
  * @version V1.0.0
  * @date 2023-01-04
- * 
+ *
  * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
- * 
+ *
  */
 #include "fishbot.h"
 
@@ -49,6 +49,20 @@ FishBotDisplay display;
 BluetoothSerial SerialBT;
 float battery_voltage;
 OneButton button(0, true);
+
+void WiFiEventCB(WiFiEvent_t event)
+{
+    Serial.println("WIFI EVENT!");
+    switch (event)
+    {
+    case SYSTEM_EVENT_STA_GOT_IP:
+        display.updateWIFIIp(WiFi.localIP().toString());
+        break;
+    case SYSTEM_EVENT_STA_LOST_IP:
+        display.updateWIFIIp("wait connect!");
+        break;
+    };
+}
 
 void doubleClick()
 {
@@ -126,6 +140,7 @@ bool setup_fishbot_transport()
     if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT)
     {
         fishlog_set_target(Serial);
+        WiFi.onEvent(WiFiEventCB);
         setup_success = microros_setup_transport_udp_client_();
         display.updateTransMode("udp_client");
     }
@@ -205,15 +220,9 @@ void loop_fishbot_control()
     if (out_motor_speed[0] == 0 && out_motor_speed[1] == 0)
     {
         battery_voltage = 5.02 * ((float)analogReadMilliVolts(34) * 1e-3);
-    }
-    if(WiFi.isConnected())
-    {
-        display.updateWIFIIp(WiFi.localIP().toString());
+        display.updateBatteryInfo(battery_voltage);
     }
     // 更新系统信息
-    display.updateBatteryInfo(battery_voltage);
-    display.updateBotAngular(kinematics.odom().angular_speed);
-    display.updateBotLinear(kinematics.odom().linear_speed);
     display.updateCurrentTime(rmw_uros_epoch_millis());
     display.updateDisplay();
     button.tick();
@@ -297,7 +306,7 @@ bool microros_setup_transport_udp_client_()
 
     IPAddress agent_ip;
     agent_ip.fromString(ip);
-    if (!set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port))
+    if (!set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port, config.board_name()))
     {
         return false;
     }
@@ -344,6 +353,9 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
         odom_msg.pose.pose.orientation.z = odom.quaternion.z;
         odom_msg.twist.twist.angular.z = odom.angular_speed;
         odom_msg.twist.twist.linear.x = odom.linear_speed;
+
+        display.updateBotAngular(odom.angular_speed);
+        display.updateBotLinear(odom.linear_speed);
 
         RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
     }

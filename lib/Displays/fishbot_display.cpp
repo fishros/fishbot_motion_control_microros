@@ -76,7 +76,10 @@ void FishBotDisplay::updateTransMode(String mode)
 }
 void FishBotDisplay::updateWIFIIp(String ip)
 {
-    ip_ = ip;
+    if(ip!=ip_){
+        ip_ = ip;
+
+    }
 }
 void FishBotDisplay::updateCurrentTime(int64_t current_time_)
 {
