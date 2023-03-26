@@ -3,7 +3,7 @@
  * @author fishros (fishros@foxmail.com)
  * @brief 机器人配置汇总
  * @version V1.0.0
- * @date 2023-01-04
+ * @date 2023-03-30
  * 
  * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
  * 
@@ -21,15 +21,15 @@
 #define CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT "udp_client" // UDP客户端模式，1
 
 /*=========================================默认值定义=====================================*/
-#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
+#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.1.100" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
 #define CONFIG_DEFAULT_TRANSPORT_MODE "udp_client"                   // 默认传输模式-udp_client模式
 #define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 921600
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
 //------------------------------------WIFI SSID-----------------------------------------
-#define CONFIG_DEFAULT_WIFI_STA_SSID "m5"
-#define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
+#define CONFIG_DEFAULT_WIFI_STA_SSID "bot4"
+#define CONFIG_DEFAULT_WIFI_STA_PSWK "12345678"
 
 //--------------------------------------电机相关配置---------------------------------------
 #define CONFIG_DEFAULT_MOTOR_PID_KP "0.625"
@@ -38,12 +38,9 @@
 
 #define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_LOW "-100"
 #define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH "100"
-#define CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO "45"
-#define CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION "44"
-#define CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER "65"
-#define CONFIG_DEFAULT_MOTOR1_PARAM_REDUCATION_RATIO "45"
-#define CONFIG_DEFAULT_MOTOR1_PARAM_PULSE_RATION "44"
-#define CONFIG_DEFAULT_MOTOR1_PARAM_WHEEL_DIAMETER "65"
+#define CONFIG_DEFAULT_MOTOR_PARAM_REDUCATION_RATIO "45"
+#define CONFIG_DEFAULT_MOTOR_PARAM_PULSE_RATION "44"
+#define CONFIG_DEFAULT_MOTOR_PARAM_WHEEL_DIAMETER "48"
 //-------------------------------------默认轮距----------------------------------------------
 #define CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE "150"
 

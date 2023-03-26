@@ -11,6 +11,7 @@
 #ifndef __KINEMATICS_H__
 #define __KINEMATICS_H__
 #include <Arduino.h>
+// #include <fishlog.h>
 
 /**
  * @brief 电机相关结构体
@@ -66,14 +67,15 @@ typedef struct
     float y;                 // 坐标y
     float yaw;               // yaw
     quaternion_t quaternion; // 姿态四元数
-    float linear_speed;      // 线速度
+    float linear_x_speed;      // x线速度
+    float linear_y_speed;      // y线速度
     float angular_speed;     // 角速度
 } odom_t;
 
 class Kinematics
 {
 private:
-    motor_param_t motor_param_[2];
+    motor_param_t motor_param_[4];
     odom_t odom_;          // 里程计数据
     float wheel_distance_; // 轮子间距
 public:
@@ -81,15 +83,16 @@ public:
     ~Kinematics() = default;
 
     static void Euler2Quaternion(float roll, float pitch, float yaw, quaternion_t &q);
-    static void TransAngleInPI(float angle,float& out_angle);
+    static void TransAngleInPI(float angle, float &out_angle);
 
     void set_motor_param(uint8_t id, uint16_t reducation_ratio, uint16_t pulse_ration, float wheel_diameter);
     void set_kinematic_param(float wheel_distance);
 
-    void kinematic_inverse(float line_speed, float angle_speed, float &out_wheel1_speed, float &out_wheel2_speed);
-    void kinematic_forward(float wheel1_speed, float wheel2_speed, float &line_speed, float &angle_speed);
-
-    void update_motor_ticks(uint64_t current_time, int32_t motor_tick1, int32_t motor_tick2);
+    void kinematic_inverse(float linear_x_speed, float linear_y_speed, float angular_speed, 
+            float &out_wheel1_speed, float &out_wheel2_speed, float &out_wheel3_speed, float &out_wheel4_speed);
+    void kinematic_forward(float wheel1_speed, float wheel2_speed, float wheel3_speed, float wheel4_speed, 
+                                    float &linear_x_speed,float &linear_y_speed, float &angular_speed);
+    void update_motor_ticks(uint64_t current_time, int32_t motor_tick1, int32_t motor_tick2, int32_t motor_tick3, int32_t motor_tick4);
 
     odom_t &odom();
     float motor_speed(uint8_t id);

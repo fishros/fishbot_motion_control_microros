@@ -33,9 +33,9 @@ void FishBotConfig::init(String namespace_)
         preferences.putString("twist_topic", CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME);
 
         preferences.putString("wheel_distance", CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE);
-        preferences.putString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO);
-        preferences.putString("pulse_ration", CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION);
-        preferences.putString("wheel_diameter", CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER);
+        preferences.putString("reducate_ration", CONFIG_DEFAULT_MOTOR_PARAM_REDUCATION_RATIO);
+        preferences.putString("pulse_ration", CONFIG_DEFAULT_MOTOR_PARAM_PULSE_RATION);
+        preferences.putString("wheel_diameter", CONFIG_DEFAULT_MOTOR_PARAM_WHEEL_DIAMETER);
 
         preferences.putString("pid_kp", CONFIG_DEFAULT_MOTOR_PID_KP);
         preferences.putString("pid_ki", CONFIG_DEFAULT_MOTOR_PID_KI);
@@ -257,15 +257,15 @@ float FishBotConfig::kinematics_wheel_distance()
 }
 uint32_t FishBotConfig::kinematics_reducation_ration()
 {
-    return preferences.getString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO).toInt();
+    return preferences.getString("reducate_ration", CONFIG_DEFAULT_MOTOR_PARAM_REDUCATION_RATIO).toInt();
 }
 uint32_t FishBotConfig::kinematics_pulse_ration()
 {
-    return preferences.getString("pulse_ration", CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION).toInt();
+    return preferences.getString("pulse_ration", CONFIG_DEFAULT_MOTOR_PARAM_PULSE_RATION).toInt();
 }
 uint32_t FishBotConfig::kinematics_wheel_diameter()
 {
-    return preferences.getString("wheel_diameter", CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER).toInt();
+    return preferences.getString("wheel_diameter", CONFIG_DEFAULT_MOTOR_PARAM_WHEEL_DIAMETER).toInt();
 }
 float FishBotConfig::kinematics_pid_kp()
 {

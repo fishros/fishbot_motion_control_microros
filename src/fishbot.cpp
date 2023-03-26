@@ -40,8 +40,8 @@ enum states
 } state;
 
 /*========================FishBot控制相关====================*/
-PidController pid_controller[2];
-Esp32PcntEncoder encoders[2];
+PidController pid_controller[4];
+Esp32PcntEncoder encoders[4];
 Esp32McpwmMotor motor;
 Kinematics kinematics;
 FishBotConfig config;
@@ -91,17 +91,24 @@ bool setup_fishbot()
     display.updateStartupInfo();
     button.attachDoubleClick(doubleClick);
     // 2.设置IO 电机&编码器
-    motor.attachMotors(CONFIG_DEFAULT_MOTOR0_A_GPIO, CONFIG_DEFAULT_MOTOR0_B_GPIO, CONFIG_DEFAULT_MOTOR1_A_GPIO, CONFIG_DEFAULT_MOTOR1_B_GPIO);
-    encoders[0].init(CONFIG_DEFAULT_ENCODER0_A_GPIO, CONFIG_DEFAULT_ENCODER0_B_GPIO, CONFIG_DEFAULT_PCNT_UTIL_00);
-    encoders[1].init(CONFIG_DEFAULT_ENCODER1_A_GPIO, CONFIG_DEFAULT_ENCODER1_B_GPIO, CONFIG_DEFAULT_PCNT_UTIL_01);
+    motor.attachMotor(0, 17, 16);
+    motor.attachMotor(1, 22, 12);
+    motor.attachMotor(2, 27, 26);
+    motor.attachMotor(3, 33, 25);
+
+    encoders[0].init(0, 13, 15);
+    encoders[1].init(1, 23, 14);
+    encoders[2].init(2, 35, 32);
+    encoders[3].init(3, 39, 36);
     // 3.设置PID
-    pid_controller[0].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), config.kinematics_pid_kd());
-    pid_controller[1].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), config.kinematics_pid_kd());
-    pid_controller[0].out_limit(-config.kinematics_pid_out_limit(), config.kinematics_pid_out_limit());
-    pid_controller[1].out_limit(-config.kinematics_pid_out_limit(), config.kinematics_pid_out_limit());
+    for (int i = 0; i < 4; i++)
+    {
+        pid_controller[i].update_target(0.0);
+        pid_controller[i].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), config.kinematics_pid_kd());
+        pid_controller[i].out_limit(-config.kinematics_pid_out_limit(), config.kinematics_pid_out_limit());
+        kinematics.set_motor_param(i, config.kinematics_reducation_ration(), config.kinematics_pulse_ration(), config.kinematics_wheel_diameter());
+    }
     // 4.设置运动学参数
-    kinematics.set_motor_param(0, config.kinematics_reducation_ration(), config.kinematics_pulse_ration(), config.kinematics_wheel_diameter());
-    kinematics.set_motor_param(1, config.kinematics_reducation_ration(), config.kinematics_pulse_ration(), config.kinematics_wheel_diameter());
     kinematics.set_kinematic_param(config.kinematics_wheel_distance());
     // 7.设置电压测量引脚
     pinMode(34, INPUT);
@@ -208,13 +215,16 @@ bool destory_fishbot_transport()
 
 void loop_fishbot_control()
 {
-    static float out_motor_speed[2];
+    static float out_motor_speed[4];
     static uint64_t last_update_info_time = millis();
-    kinematics.update_motor_ticks(micros(), encoders[0].getTicks(), encoders[1].getTicks());
-    out_motor_speed[0] = pid_controller[0].update(kinematics.motor_speed(0));
-    out_motor_speed[1] = pid_controller[1].update(kinematics.motor_speed(1));
-    motor.updateMotorSpeed(0, out_motor_speed[0]);
-    motor.updateMotorSpeed(1, out_motor_speed[1]);
+    static uint8_t index = 0;
+    kinematics.update_motor_ticks(micros(), encoders[0].getTicks(), encoders[1].getTicks(), encoders[2].getTicks(), encoders[3].getTicks());
+    for (index = 0; index < 4; index++)
+    {
+        out_motor_speed[index] = pid_controller[index].update(kinematics.motor_speed(index));
+        // fishlog_debug("pid", "index:%d target:%f current:%f out=%f", index, pid_controller[index].target_, kinematics.motor_speed(index), out_motor_speed[index]);
+        motor.updateMotorSpeed(index, out_motor_speed[index]);
+    }
 
     // 电量信息
     if (out_motor_speed[0] == 0 && out_motor_speed[1] == 0)
@@ -250,7 +260,6 @@ void loop_fishbot_transport()
     {
     case WAITING_AGENT:
         EXECUTE_EVERY_N_MS(500, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
-        // fishlog_debug("ros2", "current state2:%d", state);
         break;
     case AGENT_AVAILABLE:
         state = (true == create_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
@@ -352,10 +361,11 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
         odom_msg.pose.pose.orientation.y = odom.quaternion.y;
         odom_msg.pose.pose.orientation.z = odom.quaternion.z;
         odom_msg.twist.twist.angular.z = odom.angular_speed;
-        odom_msg.twist.twist.linear.x = odom.linear_speed;
+        odom_msg.twist.twist.linear.x = odom.linear_x_speed;
+        odom_msg.twist.twist.linear.y = odom.linear_y_speed;
 
         display.updateBotAngular(odom.angular_speed);
-        display.updateBotLinear(odom.linear_speed);
+        display.updateBotLinear(odom.linear_x_speed);
 
         RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
     }
@@ -364,10 +374,14 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
 void callback_twist_subscription_(const void *msgin)
 {
     const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
-    static float target_motor_speed1, target_motor_speed2;
-    kinematics.kinematic_inverse(msg->linear.x * 1000, msg->angular.z, target_motor_speed1, target_motor_speed2);
+    static float target_motor_speed1, target_motor_speed2, target_motor_speed3, target_motor_speed4;
+    kinematics.kinematic_inverse(msg->linear.x * 1000, msg->linear.y * 1000, msg->angular.z,
+                                 target_motor_speed1, target_motor_speed2, target_motor_speed3, target_motor_speed4);
+
     pid_controller[0].update_target(target_motor_speed1);
     pid_controller[1].update_target(target_motor_speed2);
+    pid_controller[2].update_target(target_motor_speed3);
+    pid_controller[3].update_target(target_motor_speed4);
 }
 
 void callback_config_service_(const void *req, void *res)

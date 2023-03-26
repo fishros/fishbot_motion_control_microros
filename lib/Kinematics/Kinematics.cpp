@@ -34,7 +34,10 @@ void Kinematics::set_motor_param(uint8_t id, uint16_t reducation_ratio, uint16_t
     motor_param_[id].wheel_diameter = wheel_diameter;
     motor_param_[id].per_pulse_distance = (wheel_diameter * PI) / (reducation_ratio * pulse_ration);
     motor_param_[id].speed_factor = (1000 * 1000) * (wheel_diameter * PI) / (reducation_ratio * pulse_ration);
-    Serial.printf("init motor param %d: %f=%f*PI/(%d*%d) speed_factor=%d\n", id, motor_param_[id].per_pulse_distance, wheel_diameter, reducation_ratio, pulse_ration, motor_param_[id].speed_factor);
+    // 给初值
+    motor_param_[id].last_encoder_tick = 0;
+
+    // Serial.printf("init motor param %d: %f=%f*PI/(%d*%d) speed_factor=%d\n", id, motor_param_[id].per_pulse_distance, wheel_diameter, reducation_ratio, pulse_ration, motor_param_[id].speed_factor);
 }
 
 void Kinematics::set_kinematic_param(float wheel_distance)
@@ -42,22 +45,27 @@ void Kinematics::set_kinematic_param(float wheel_distance)
     wheel_distance_ = wheel_distance;
 }
 
-void Kinematics::update_motor_ticks(uint64_t current_time, int32_t motor_tick1, int32_t motor_tick2)
+void Kinematics::update_motor_ticks(uint64_t current_time, int32_t motor_tick1, int32_t motor_tick2, int32_t motor_tick3, int32_t motor_tick4)
 {
-
     uint32_t dt = current_time - motor_param_[0].last_update_time;
-    int32_t dtick1 = motor_tick1 - motor_param_[0].last_encoder_tick;
-    int32_t dtick2 = motor_tick2 - motor_param_[1].last_encoder_tick;
-    // 轮子速度计算
-    motor_param_[0].motor_speed = dtick1 * (motor_param_[0].speed_factor / dt);
-    motor_param_[1].motor_speed = dtick2 * (motor_param_[1].speed_factor / dt);
+    static int32_t dticks[4];
+    static int32_t motor_ticks[4];
+    static int8_t index;
 
-    // Serial.printf("motor_speed %d=%d*%d/%d\n", motor_param_[0].motor_speed, motor_param_[0].speed_factor, dtick1, dt);
+    motor_ticks[0] = motor_tick1;
+    motor_ticks[1] = motor_tick2;
+    motor_ticks[2] = motor_tick3;
+    motor_ticks[3] = motor_tick4;
 
-    motor_param_[0].last_encoder_tick = motor_tick1;
-    motor_param_[1].last_encoder_tick = motor_tick2;
-    motor_param_[0].last_update_time = current_time;
-    motor_param_[1].last_update_time = current_time;
+    for (int index = 0; index < 4; index++)
+    {
+        // ticks数量计算
+        dticks[index] = motor_ticks[index] - motor_param_[index].last_encoder_tick;
+        // 轮子速度计算
+        motor_param_[index].motor_speed = dticks[index] * (motor_param_[index].speed_factor / dt);
+        motor_param_[index].last_encoder_tick = motor_ticks[index];
+        motor_param_[index].last_update_time = current_time;
+    }
 
     // 更新机器人里程计
     this->update_bot_odom_(dt);
@@ -65,40 +73,56 @@ void Kinematics::update_motor_ticks(uint64_t current_time, int32_t motor_tick1, 
 
 void Kinematics::update_bot_odom_(uint32_t dt)
 {
-    static float linear_speed, angular_speed;
+    static float linear_x_speed, linear_y_speed, angular_speed;
     float dt_s = (float)(dt / 1000) / 1000;
 
-    this->kinematic_forward(motor_param_[0].motor_speed, motor_param_[1].motor_speed, linear_speed, angular_speed);
+    this->kinematic_forward(motor_param_[0].motor_speed,
+                            motor_param_[1].motor_speed,
+                            motor_param_[2].motor_speed,
+                            motor_param_[3].motor_speed,
+                            linear_x_speed,
+                            linear_y_speed,
+                            angular_speed);
 
     odom_.angular_speed = angular_speed;
-    odom_.linear_speed = linear_speed / 1000; // /1000（mm/s 转 m/s）
-
-    odom_.yaw += odom_.angular_speed * dt_s;
-
-    Kinematics::TransAngleInPI(odom_.yaw, odom_.yaw);
-    
+    odom_.linear_x_speed = linear_x_speed / 1000; // /1000（mm/s 转 m/s）
+    odom_.linear_y_speed = linear_y_speed / 1000; // /1000（mm/s 转 m/s）
 
     /*更新x和y轴上移动的距离*/
-    float delta_distance = odom_.linear_speed * dt_s; // 单位m
-    odom_.x += delta_distance * std::cos(odom_.yaw);
-    odom_.y += delta_distance * std::sin(odom_.yaw);
+    odom_.x += odom_.linear_x_speed * cos(odom_.yaw) * dt_s + odom_.linear_y_speed * sin(odom_.yaw) * dt_s;
+    odom_.y += odom_.linear_y_speed * cos(odom_.yaw) * dt_s + odom_.linear_x_speed * sin(odom_.yaw) * dt_s;
 
-    // Serial.printf("dist=%f,dt=%d,dts=%f,odom_.linear_speed=%f,odom_.yaw=%f,odom_.x=%f\n", delta_distance, dt, dt_s, odom_.linear_speed, odom_.yaw, odom_.x);
+    odom_.yaw += odom_.angular_speed * dt_s;
+    Kinematics::TransAngleInPI(odom_.yaw, odom_.yaw);
+
+    // Serial.printf("odom(%f,%f)\n", odom_.x, odom_.y);
 }
 
-void Kinematics::kinematic_inverse(float linear_speed, float angular_speed, float &out_wheel1_speed, float &out_wheel2_speed)
+void Kinematics::kinematic_inverse(float linear_x_speed, float linear_y_speed, float angular_speed,
+                                   float &out_wheel_speed1, float &out_wheel_speed2, float &out_wheel_speed3, float &out_wheel_speed4)
 {
-    out_wheel1_speed =
-        linear_speed - (angular_speed * wheel_distance_) / 2.0;
-    out_wheel2_speed =
-        linear_speed + (angular_speed * wheel_distance_) / 2.0;
+    const float a = 87.5, b = 68.5;
+
+    out_wheel_speed1 = linear_x_speed - linear_y_speed - angular_speed * (a + b);
+    out_wheel_speed2 = linear_x_speed + linear_y_speed + angular_speed * (a + b);
+    out_wheel_speed3 = linear_x_speed + linear_y_speed - angular_speed * (a + b);
+    out_wheel_speed4 = linear_x_speed - linear_y_speed + angular_speed * (a + b);
+
+    // Serial.printf("out_wheel_speed[%f,%f,%f,%f]\n", out_wheel_speed1, out_wheel_speed2, out_wheel_speed3, out_wheel_speed4);
 }
 
-void Kinematics::kinematic_forward(float wheel1_speed, float wheel2_speed, float &linear_speed, float &angular_speed)
+void Kinematics::kinematic_forward(float wheel1_speed, float wheel2_speed, float wheel3_speed, float wheel4_speed,
+                                   float &linear_x_speed, float &linear_y_speed, float &angular_speed)
 {
-    linear_speed = (wheel1_speed + wheel2_speed) / 2.0;
-    angular_speed =
-        (wheel2_speed - wheel1_speed) / wheel_distance_;
+    const float a = 87.5f;
+    const float b = 68.5f;
+
+    // 计算机器人的 x 轴线速度，公式为四个轮子转速之和的平均值。
+    linear_x_speed = (wheel1_speed + wheel2_speed + wheel3_speed + wheel4_speed) / 4.0f;
+    linear_y_speed = (-wheel1_speed + wheel2_speed + wheel3_speed - wheel4_speed) / 4.0f;
+    angular_speed = float(-wheel1_speed + wheel2_speed - wheel3_speed + wheel4_speed) / (4.0f * (a + b));
+
+    // Serial.printf("angular_speed:%f wheel_speed[%f,%f,%f,%f]\n",angular_speed, wheel1_speed, wheel2_speed, wheel3_speed, wheel4_speed);
 }
 
 odom_t &Kinematics::odom()
