@@ -4,9 +4,9 @@
  * @brief 机器人配置汇总
  * @version V1.0.0
  * @date 2023-01-04
- * 
+ *
  * @copyright Copyright (c) fishros.com & fishros.org.cn 2023
- * 
+ *
  */
 #ifndef __FISHBOT_CONFIG_H__
 #define __FISHBOT_CONFIG_H__
@@ -24,7 +24,7 @@
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.2.105" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
 #define CONFIG_DEFAULT_TRANSPORT_MODE "udp_client"                   // 默认传输模式-udp_client模式
-#define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 921600
+#define CONFIG_DEFAULT_SERIAL_ID "0"                                 // 可选使用0或者2,使用2则需要使用GPIO16和17作为RXTX
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
 //------------------------------------WIFI SSID-----------------------------------------
@@ -38,14 +38,14 @@
 
 #define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_LOW "-100"
 #define CONFIG_DEFAULT_MOTOR_OUT_LIMIT_HIGH "100"
-#define CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO "42"
+#define CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO "40.5"
 #define CONFIG_DEFAULT_MOTOR0_PARAM_PULSE_RATION "44"
 #define CONFIG_DEFAULT_MOTOR0_PARAM_WHEEL_DIAMETER "65"
-#define CONFIG_DEFAULT_MOTOR1_PARAM_REDUCATION_RATIO "45"
+#define CONFIG_DEFAULT_MOTOR1_PARAM_REDUCATION_RATIO "40.5"
 #define CONFIG_DEFAULT_MOTOR1_PARAM_PULSE_RATION "44"
 #define CONFIG_DEFAULT_MOTOR1_PARAM_WHEEL_DIAMETER "65"
 //-------------------------------------默认轮距----------------------------------------------
-#define CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE "172"
+#define CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE "172.75"
 
 //------------------------------------IO相关配置----------------------------------------------
 // IMU
@@ -94,6 +94,7 @@
 #define CONFIG_NAME_NAMESPACE "fishbot"
 #define CONFIG_NAME_TRANSPORT_MODE "transport_mode"
 #define CONFIG_NAME_TRANSPORT_SERIAL_BAUD "serial_baud"
+#define CONFIG_NAME_TRANSPORT_SERIAL_ID "serial_id"
 #define CONFIG_NAME_TRANSPORT_MODE_WIFI_SERVER_IP "server_ip"
 #define CONFIG_NAME_TRANSPORT_MODE_WIFI_SERVER_PORT "server_port"
 
@@ -163,6 +164,7 @@ public:
     String microros_transport_mode();
     String microros_uclient_server_ip();
     uint32_t microros_uclient_server_port();
+    uint32_t microros_serial_id();
     // ROS2相关
     String ros2_nodename();
     String ros2_namespace();
@@ -171,7 +173,7 @@ public:
     String ros2_twist_topic_name();
     uint32_t odom_publish_period();
     // 运动学相关配置
-    uint32_t kinematics_reducation_ration();
+    float kinematics_reducation_ration();
     uint32_t kinematics_pulse_ration();
     uint32_t kinematics_wheel_diameter();
     float kinematics_wheel_distance();

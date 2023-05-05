@@ -83,7 +83,7 @@ public:
     static void Euler2Quaternion(float roll, float pitch, float yaw, quaternion_t &q);
     static void TransAngleInPI(float angle,float& out_angle);
 
-    void set_motor_param(uint8_t id, uint16_t reducation_ratio, uint16_t pulse_ration, float wheel_diameter);
+    void set_motor_param(uint8_t id, float reducation_ratio, uint16_t pulse_ration, float wheel_diameter);
     void set_kinematic_param(float wheel_distance);
 
     void kinematic_inverse(float line_speed, float angle_speed, float &out_wheel1_speed, float &out_wheel2_speed);

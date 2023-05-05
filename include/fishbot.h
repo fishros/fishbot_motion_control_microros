@@ -74,7 +74,7 @@ void loop_fishbot_control();
 void loop_fishbot_transport();
 
 bool microros_setup_transport_udp_client_();
-bool microros_setup_transport_serial_();
+bool microros_setup_transport_serial_(HardwareSerial& serial);
 
 void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time);
 void callback_twist_subscription_(const void *msgin);

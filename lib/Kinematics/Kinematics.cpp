@@ -35,7 +35,7 @@ void Kinematics::TransAngleInPI(float angle, float &out_angle)
 }
 
 // 设置机器人的电机参数。该方法接受四个参数：电机的 ID、降速比、脉冲比和轮子直径。
-void Kinematics::set_motor_param(uint8_t id, uint16_t reducation_ratio, uint16_t pulse_ration, float wheel_diameter)
+void Kinematics::set_motor_param(uint8_t id, float reducation_ratio, uint16_t pulse_ration, float wheel_diameter)
 {
     motor_param_[id].id = id;                                   // 机器人电机的 ID 
     motor_param_[id].reducation_ratio = reducation_ratio;       // 电机的减速比

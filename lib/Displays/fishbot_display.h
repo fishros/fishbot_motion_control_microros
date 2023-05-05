@@ -24,14 +24,21 @@ private:
     float ultrasound_distance_;
     float bot_angular_;
     float bot_linear_;
+    uint32_t baudrate_;
     String mode_;
     String ip_="wait connect!";
+    uint8_t display_mode_;
 
     int64_t current_time ;
     uint64_t last_update_time;
     uint64_t update_interval{1000};
+
+    String wifi_ssid_;
+    String wifi_pswd_;
+    
 public:
     void init();
+    void updateDisplayMode(uint8_t display_mode);
     void updateDisplay();
     void updateStartupInfo();
     void updateBatteryInfo(float &battery_info);
@@ -40,7 +47,10 @@ public:
     void updateBotLinear(float &bot_linear);
     void updateTransMode(String mode);
     void updateCurrentTime(int64_t current_time_);
+    void updateBaudRate(uint32_t baudrate);
     void updateWIFIIp(String ip);
+    void updateWIFISSID(String ssid);
+    void updateWIFIPSWD(String pswd);
     String twoDigits(int digits);
     FishBotDisplay();
     ~FishBotDisplay() = default;

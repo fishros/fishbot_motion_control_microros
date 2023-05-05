@@ -24,6 +24,7 @@ void FishBotConfig::init(String namespace_)
         preferences.putString("microros_mode", CONFIG_DEFAULT_TRANSPORT_MODE);
         preferences.putString("udpserver_ip", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP);
         preferences.putString("udpserver_port", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT);
+        preferences.putString("serial_id", CONFIG_DEFAULT_SERIAL_ID);
 
         preferences.putString("ros2_nodename", CONFIG_DEFAULT_ROS2_NODE_NAME);
         preferences.putString("ros2_namespace", CONFIG_DEFAULT_ROS2_NAMESPACE);
@@ -66,6 +67,8 @@ String FishBotConfig::config_str()
     config.concat(is_first_startup());
     config.concat("\n$serial_baud=");
     config.concat(serial_baudrate());
+    config.concat("\n$serial_id=");
+    config.concat(microros_serial_id());
     config.concat("\n$wifi_ssid=");
     config.concat(wifi_sta_ssid());
     config.concat("\n$wifi_pswd=");
@@ -180,6 +183,10 @@ uint32_t FishBotConfig::microros_uclient_server_port()
 {
     return preferences.getString("udpserver_port", CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT).toInt();
 }
+uint32_t FishBotConfig::microros_serial_id()
+{
+    return preferences.getString("serial_id", CONFIG_DEFAULT_SERIAL_ID).toInt();
+}
 // ROS2相关
 String FishBotConfig::ros2_nodename()
 {
@@ -210,9 +217,9 @@ float FishBotConfig::kinematics_wheel_distance()
 {
     return preferences.getString("wheel_distance", CONFIG_DEFAULT_KINEMATIC_WHEEL_DISTANCE).toFloat();
 }
-uint32_t FishBotConfig::kinematics_reducation_ration()
+float FishBotConfig::kinematics_reducation_ration()
 {
-    return preferences.getString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO).toInt();
+    return preferences.getString("reducate_ration", CONFIG_DEFAULT_MOTOR0_PARAM_REDUCATION_RATIO).toFloat();
 }
 uint32_t FishBotConfig::kinematics_pulse_ration()
 {
