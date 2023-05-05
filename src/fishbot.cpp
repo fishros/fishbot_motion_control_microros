@@ -94,6 +94,7 @@ bool setup_fishbot()
 {
     // 1.初始化
     Serial.begin(115200);
+    Serial2.begin(115200);
     fishlog_set_target(Serial);
     config.init(CONFIG_NAME_NAMESPACE);
     Serial.println(FIRST_START_TIP);
@@ -175,9 +176,9 @@ bool setup_fishbot_transport()
     if (config.microros_transport_mode() == CONFIG_TRANSPORT_MODE_SERIAL)
     {
         // 使用 "config.board_name()" 函数获取板子名称,使用 "SerialBT.begin()" 启动蓝牙传输模式
-        SerialBT.begin(config.board_name());
+        // SerialBT.begin(config.board_name());
         // 将日志输出目标设置为蓝牙串口
-        fishlog_set_target(SerialBT);
+        fishlog_set_target(Serial);
         // 调用 "microros_setup_transport_serial_()" 函数，以启动串口传输模式
         microros_setup_transport_serial_();
         display.updateTransMode("serial");
@@ -432,8 +433,8 @@ bool microros_setup_transport_serial_()
     // 获取串口波特率
     uint32_t serial_baudraate = config.serial_baudrate();
     // 使用Serial.updateBaudRate函数更新串口波特率
-    Serial.updateBaudRate(serial_baudraate);
-    if (!set_microros_serial_transports(Serial))
+    Serial2.updateBaudRate(serial_baudraate);
+    if (!set_microros_serial_transports(Serial2))
     {
         return false;
     }
