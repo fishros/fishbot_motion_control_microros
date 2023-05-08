@@ -218,8 +218,10 @@ bool create_fishbot_transport()
     String twist_topic = config.ros2_twist_topic_name();
     String odom_topic = config.ros2_odom_topic_name();
     String odom_frameid_str = config.ros2_odom_frameid(); // 存储里程计帧 ID
+    String odom_child_frameid_str=config.ros2_odom_child_frameid();
     // 使用 micro_ros_string_utilities_set 函数设置到 odom_msg.header.frame_id 中
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    odom_msg.child_frame_id=micro_ros_string_utilities_set(odom_msg.child_frame_id,odom_child_frameid_str.c_str());
     const unsigned int timer_timeout = config.odom_publish_period();
     delay(500);
     // 默认的内存分配器 allocator
@@ -435,10 +437,12 @@ bool microros_setup_transport_serial_(HardwareSerial &serial)
     String twist_topic = config.ros2_twist_topic_name();
     String odom_topic = config.ros2_odom_topic_name();
     String odom_frameid_str = config.ros2_odom_frameid();
+    String odom_child_frameid_str=config.ros2_odom_child_frameid();
     // 用于将odom_frameid_str的C字符串值设置为odom_msg的帧ID。
     // 该函数会将odom_msg中的帧ID指针所指向的字符串缓冲区中的数据替换为odom_frameid_str的C字符串值，并返回指向新字符串的指针。
     // 这样可以确保odom_msg的帧ID与配置中的值一致。
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    odom_msg.child_frame_id = micro_ros_string_utilities_set(odom_msg.child_frame_id, odom_frameid_str.c_str());
 
     const unsigned int timer_timeout = config.odom_publish_period();
     // 初始化数据接收配置
