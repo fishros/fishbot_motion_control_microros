@@ -30,6 +30,7 @@ void FishBotConfig::init(String namespace_)
         preferences.putString("ros2_namespace", CONFIG_DEFAULT_ROS2_NAMESPACE);
         preferences.putString("odom_topic", CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME);
         preferences.putString("odom_frameid", CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID);
+        preferences.putString("odom_c_frameid", CONFIG_DEFAULT_ROS2_ODOM_CHILD_FRAME_ID);
         preferences.putString("odom_pub_period", CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD);
         preferences.putString("twist_topic", CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME);
 
@@ -100,6 +101,9 @@ String FishBotConfig::config_str()
 
     config.concat("\n$odom_frameid=");
     config.concat(ros2_odom_frameid());
+
+    config.concat("\n$odom_c_frameid=");
+    config.concat(ros2_odom_child_frameid());
 
     config.concat("\n$twist_topic=");
     config.concat(ros2_twist_topic_name());
@@ -203,6 +207,10 @@ String FishBotConfig::ros2_odom_topic_name()
 String FishBotConfig::ros2_odom_frameid()
 {
     return preferences.getString("odom_frameid", CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID);
+}
+String FishBotConfig::ros2_odom_child_frameid()
+{
+    return preferences.getString("odom_c_frameid", CONFIG_DEFAULT_ROS2_ODOM_CHILD_FRAME_ID);
 }
 uint32_t FishBotConfig::odom_publish_period()
 {

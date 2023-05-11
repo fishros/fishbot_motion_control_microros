@@ -84,6 +84,7 @@
 #define CONFIG_DEFAULT_ROS2_NAMESPACE ""
 #define CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME "odom"
 #define CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID "odom"
+#define CONFIG_DEFAULT_ROS2_ODOM_CHILD_FRAME_ID "base_link"
 #define CONFIG_DEFAULT_ROS2_CMD_VEL_TOPIC_NAME "cmd_vel"
 #define CONFIG_DEFAULT_ROS2_ODOM_PUBLISH_PERIOD "50"
 #define CONFIG_DEFAULT_ROS2_HANDLE_NUM "2"
@@ -170,6 +171,7 @@ public:
     String ros2_namespace();
     String ros2_odom_topic_name();
     String ros2_odom_frameid();
+    String ros2_odom_child_frameid();
     String ros2_twist_topic_name();
     uint32_t odom_publish_period();
     // 运动学相关配置
