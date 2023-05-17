@@ -91,15 +91,16 @@ bool setup_fishbot()
     display.updateStartupInfo();
     button.attachDoubleClick(doubleClick);
     // 2.设置IO 电机&编码器
-    motor.attachMotor(0, 17, 16);
-    motor.attachMotor(1, 22, 12);
-    motor.attachMotor(2, 27, 26);
-    motor.attachMotor(3, 33, 25);
+    motor.attachMotor(0, 12, 22);
+    motor.attachMotor(1, 16, 17);
+    motor.attachMotor(2, 25, 33);
+    motor.attachMotor(3, 26, 27);
 
-    encoders[0].init(0, 13, 15);
-    encoders[1].init(1, 23, 14);
-    encoders[2].init(2, 35, 32);
-    encoders[3].init(3, 39, 36);
+    encoders[0].init(0, 14, 23);
+    encoders[1].init(1, 15, 13);
+    encoders[2].init(2, 36, 39);
+    encoders[3].init(3, 32, 35);
+
     // 3.设置PID
     for (int i = 0; i < 4; i++)
     {

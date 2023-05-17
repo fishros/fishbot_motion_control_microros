@@ -101,7 +101,9 @@ void Kinematics::update_bot_odom_(uint32_t dt)
 void Kinematics::kinematic_inverse(float linear_x_speed, float linear_y_speed, float angular_speed,
                                    float &out_wheel_speed1, float &out_wheel_speed2, float &out_wheel_speed3, float &out_wheel_speed4)
 {
-    const float a = 87.5, b = 68.5;
+    // TODO : 参数化
+    const float a = 108.0f;
+    const float b = 88.5f;
 
     out_wheel_speed1 = linear_x_speed - linear_y_speed - angular_speed * (a + b);
     out_wheel_speed2 = linear_x_speed + linear_y_speed + angular_speed * (a + b);
@@ -114,8 +116,9 @@ void Kinematics::kinematic_inverse(float linear_x_speed, float linear_y_speed, f
 void Kinematics::kinematic_forward(float wheel1_speed, float wheel2_speed, float wheel3_speed, float wheel4_speed,
                                    float &linear_x_speed, float &linear_y_speed, float &angular_speed)
 {
-    const float a = 87.5f;
-    const float b = 68.5f;
+    // TODO : 参数化
+    const float a = 108.0f;
+    const float b = 88.5f;
 
     // 计算机器人的 x 轴线速度，公式为四个轮子转速之和的平均值。
     linear_x_speed = (wheel1_speed + wheel2_speed + wheel3_speed + wheel4_speed) / 4.0f;

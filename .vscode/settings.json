@@ -32,5 +32,6 @@
         "random": "cpp",
         "chrono": "cpp",
         "algorithm": "cpp"
-    }
+    },
+    "ros.distro": "humble"
 }
