@@ -30,6 +30,6 @@ docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host mi
 
 ```
 export boot_app0_dir="/home/fishros/.platformio/packages/framework-arduinoespressif32/tools/partitions"
-docker run -it --rm --privileged -v=/dev:/dev  -v $boot_app0_dir:$boot_app0_dir -v `pwd`:`pwd` -w `pwd` fishros2/fishbot-tool esptool.py  --chip esp32 merge_bin -o bin/fishbot_motion_control_v1.0.0.`date +%y%m%d`.bin --flash_mode dio --flash_size 4MB 0x1000 .pio/build/featheresp32/bootloader.bin 0x8000 .pio/build/featheresp32/partitions.bin 0xe000 $boot_app0_dir/boot_app0.bin 0x10000 .pio/build/featheresp32/firmware.bin
+docker run -it --rm --privileged -v=/dev:/dev  -v $boot_app0_dir:$boot_app0_dir -v `pwd`:`pwd` -w `pwd` fishros2/fishbot-tool esptool.py  --chip esp32 merge_bin -o bin/fishbot_motion_control_four_driver_v1.0.0.`date +%y%m%d`.bin --flash_mode dio --flash_size 4MB 0x1000 .pio/build/featheresp32/bootloader.bin 0x8000 .pio/build/featheresp32/partitions.bin 0xe000 $boot_app0_dir/boot_app0.bin 0x10000 .pio/build/featheresp32/firmware.bin
 ```
 
