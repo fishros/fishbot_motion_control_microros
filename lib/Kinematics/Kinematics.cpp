@@ -65,11 +65,9 @@ void Kinematics::update_motor_ticks(uint64_t current_time, int32_t motor_tick1, 
     int32_t dtick1 = motor_tick1 - motor_param_[0].last_encoder_tick;
     int32_t dtick2 = motor_tick2 - motor_param_[1].last_encoder_tick;
     // 轮子速度计算
-    motor_param_[0].motor_speed = dtick1 * (motor_param_[0].speed_factor / dt);
-    motor_param_[1].motor_speed = dtick2 * (motor_param_[1].speed_factor / dt);
-
+    motor_param_[0].motor_speed = dtick1 * ((double)motor_param_[0].speed_factor / dt);
+    motor_param_[1].motor_speed = dtick2 * ((double)motor_param_[1].speed_factor / dt);
     // Serial.printf("motor_speed %d=%d*%d/%d\n", motor_param_[0].motor_speed, motor_param_[0].speed_factor, dtick1, dt);
-
     motor_param_[0].last_encoder_tick = motor_tick1;
     motor_param_[1].last_encoder_tick = motor_tick2;
     motor_param_[0].last_update_time = current_time;
@@ -139,6 +137,5 @@ odom_t &Kinematics::odom()
 // 传入电机的编号 id。返回该编号电机的速度
 float Kinematics::motor_speed(uint8_t id)
 {
-    
     return motor_param_[id].motor_speed;
 }
