@@ -306,7 +306,7 @@ void loop_fishbot_control()
         else
         {
             // 使用 pid_controller[0] 和 pid_controller[1] 控制器对电机速度进行 PID 控制
-            out_motor_speed[index] = pid_controller[0].update(kinematics.motor_speed(index));
+            out_motor_speed[index] = pid_controller[index].update(kinematics.motor_speed(index));
         }
         // 将 PID 控制器的输出值作为电机的目标速度进行控制
         motor.updateMotorSpeed(index, out_motor_speed[index]);
