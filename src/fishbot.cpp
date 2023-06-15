@@ -11,8 +11,9 @@
 #include "fishbot.h"
 
 /*==================MicroROS消息============================*/
-geometry_msgs__msg__Twist twist_msg;                        // 机器人的速度控制指令
-nav_msgs__msg__Odometry odom_msg;                           // 机器人的里程计信息
+geometry_msgs__msg__Twist twist_msg; // 机器人的速度控制指令
+nav_msgs__msg__Odometry odom_msg;    // 机器人的里程计信息
+sensor_msgs__msg__Imu imu_msg;
 char odom_frame_id[16];                                     // 用于存储机器人里程计信息中的坐标系名称
 fishbot_interfaces__srv__FishBotConfig_Response config_res; // 机器人的配置信息
 fishbot_interfaces__srv__FishBotConfig_Request config_req;  // 请求机器人的配置信息
@@ -21,6 +22,7 @@ static int keyvalue_capacity = 100;                         // 机器人配置�
 
 /*==================MicroROS订阅发布者服务========================*/
 rcl_publisher_t odom_publisher;      // 用于发布机器人的里程计信息（Odom）
+rcl_publisher_t imu_publisher;       // 用于发布机器人的IMU信息（Imu）
 rcl_subscription_t twist_subscriber; // 用于订阅机器人的速度控制指令（Twist）
 rcl_service_t config_service;        // 用于提供机器人的配置信息
 rcl_wait_set_t wait_set;             // 用于管理一组等待中的事件，例如发布者、订阅者、服务等
@@ -50,6 +52,9 @@ FishBotDisplay display;          // 用于显示机器人的状态信息，例�
 BluetoothSerial SerialBT;        // 蓝牙串口对象,用于通过蓝牙模块与其他设备进行通信
 float battery_voltage;           // 存储机器人的电池电压
 OneButton button(0, true);       // 单按钮（Button）对象，用于检测机器人上的一个按钮是否被按下
+MPU6050 mpu(Wire);               // 初始化MPU6050对象
+ImuDriver imu(mpu);              // 初始化Imu对象
+imu_t imu_data;                  // IMU 数据对象
 
 // WiFiEventCB 的回调函数,捕获 ESP32 系统中的 WiFi 事件
 // WiFiEvent_t event 是一个 WiFi 事件类型的变量，用于存储捕获到的 WiFi 事件。
@@ -117,6 +122,8 @@ bool setup_fishbot()
     // 初始化按键
     button.attachDoubleClick(doubleClick);
     button.attachClick(oneClick);
+    // 初始化IMU
+    imu.begin(18, 19);
     // 2.设置IO 电机&编码器
     motor.attachMotor(0, CONFIG_DEFAULT_MOTOR0_A_GPIO, CONFIG_DEFAULT_MOTOR0_B_GPIO);
     motor.attachMotor(1, CONFIG_DEFAULT_MOTOR1_A_GPIO, CONFIG_DEFAULT_MOTOR1_B_GPIO);
@@ -222,6 +229,7 @@ bool create_fishbot_transport()
     // 使用 micro_ros_string_utilities_set 函数设置到 odom_msg.header.frame_id 中
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
     odom_msg.child_frame_id = micro_ros_string_utilities_set(odom_msg.child_frame_id, odom_child_frameid_str.c_str());
+    imu_msg.header.frame_id = micro_ros_string_utilities_set(imu_msg.header.frame_id, "imu");
     const unsigned int timer_timeout = config.odom_publish_period();
     delay(500);
     // 默认的内存分配器 allocator
@@ -237,6 +245,11 @@ bool create_fishbot_transport()
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
         odom_topic.c_str()));
+    RCSOFTCHECK(rclc_publisher_init_best_effort(
+        &imu_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+       "imu"));
     // 调用 rclc_subscription_init_default 函数初始化 ROS 2 订阅者，传入节点、消息类型和主题名称。
     RCSOFTCHECK(rclc_subscription_init_default(
         &twist_subscriber,
@@ -250,7 +263,7 @@ bool create_fishbot_transport()
         ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
         "/fishbot_config"));
     // 调用 rclc_timer_init_default 函数初始化 ROS 2 定时器，传入支持库、定时器周期和回调函数
-    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
+    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_sensor_publisher_timer_));
     // 调用 rclc_executor_init 函数初始化 ROS 2 执行器，传入支持库、执行器线程数和内存分配器
     RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     // 调用 rclc_executor_add_subscription 函数将订阅者添加到执行器中，传入执行器、订阅者、消息和回调函数。
@@ -325,6 +338,7 @@ void loop_fishbot_control()
     display.updateDisplay();
     // 用于处理按钮事件等操作
     button.tick();
+    imu.update();
 }
 
 void loop_fishbot_transport()
@@ -452,7 +466,7 @@ bool microros_setup_transport_serial_(HardwareSerial &serial)
     // 这样可以确保odom_msg的帧ID与配置中的值一致。
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
     odom_msg.child_frame_id = micro_ros_string_utilities_set(odom_msg.child_frame_id, odom_frameid_str.c_str());
-
+    imu_msg.header.frame_id = micro_ros_string_utilities_set(imu_msg.header.frame_id, "imu");
     const unsigned int timer_timeout = config.odom_publish_period();
     // 初始化数据接收配置
     // 初始化了四个名为config_req和config_res的结构体变量。
@@ -476,15 +490,15 @@ bool microros_setup_transport_serial_(HardwareSerial &serial)
 }
 
 // 用于在定时器触发时发布机器人的位置和速度信息
-void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
+void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
     if (timer != NULL)
     {
-        // 获取机器人的位置和速度信息，并将其存储在一个ROS消息（odom_msg）中
-        odom_t odom = kinematics.odom();
         // 用于获取当前的时间戳，并将其存储在消息的头部中
         int64_t stamp = rmw_uros_epoch_millis();
+        // 获取机器人的位置和速度信息，并将其存储在一个ROS消息（odom_msg）中
+        odom_t odom = kinematics.odom();
         odom_msg.header.stamp.sec = stamp * 1e-3;
         odom_msg.header.stamp.nanosec = stamp - odom_msg.header.stamp.sec * 1000;
         odom_msg.pose.pose.position.x = odom.x;
@@ -493,6 +507,7 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
         odom_msg.pose.pose.orientation.x = odom.quaternion.x;
         odom_msg.pose.pose.orientation.y = odom.quaternion.y;
         odom_msg.pose.pose.orientation.z = odom.quaternion.z;
+
         odom_msg.twist.twist.angular.z = odom.angular_speed;
         odom_msg.twist.twist.linear.x = odom.linear_speed;
 
@@ -500,6 +515,29 @@ void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
         display.updateBotLinear(odom.linear_speed);
 
         RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+
+        if (imu.isEnable())
+        {
+            imu.getImuDriverData(imu_data);
+
+            imu_msg.header.stamp.sec = stamp * 1e-3;
+            imu_msg.header.stamp.nanosec = stamp - imu_msg.header.stamp.sec * 1000;
+
+            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
+            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
+            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
+
+            imu_msg.linear_acceleration.x = imu_data.linear_acceleration.x;
+            imu_msg.linear_acceleration.y = imu_data.linear_acceleration.y;
+            imu_msg.linear_acceleration.z = imu_data.linear_acceleration.z;
+
+            imu_msg.orientation.x = imu_data.orientation.x;
+            imu_msg.orientation.y = imu_data.orientation.y;
+            imu_msg.orientation.z = imu_data.orientation.z;
+            imu_msg.orientation.w = imu_data.orientation.w;
+
+            RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
+        }
     }
 }
 

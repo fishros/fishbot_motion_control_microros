@@ -18,6 +18,7 @@
 #include <Kinematics.h>
 #include <BluetoothSerial.h>
 #include <OneButton.h>
+#include <ImuDriver.h>
 
 /* MicroROS */
 #include <micro_ros_platformio.h>
@@ -32,6 +33,7 @@
 #include <micro_ros_utilities/string_utilities.h>
 #include "micro_ros_transport_serial.h"
 #include "micro_ros_transport_wifi_udp.h"
+#include "sensor_msgs/msg/imu.h"
 
 #include "fishlog.h"
 #include "fishbot_config.h"
@@ -76,7 +78,7 @@ void loop_fishbot_transport();
 bool microros_setup_transport_udp_client_();
 bool microros_setup_transport_serial_(HardwareSerial& serial);
 
-void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time);
+void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time);
 void callback_twist_subscription_(const void *msgin);
 void callback_config_service_(const void *req, void *res);
 
