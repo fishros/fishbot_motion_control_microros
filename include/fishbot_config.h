@@ -21,15 +21,15 @@
 #define CONFIG_TRANSPORT_MODE_WIFI_UDP_CLIENT "udp_client" // UDP客户端模式，1
 
 /*=========================================默认值定义=====================================*/
-#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.1.100" // 默认UDP服务端IP
+#define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_IP "192.168.4.134" // 默认UDP服务端IP
 #define CONFIG_DEFAULT_TRANSPORT_MODE_WIFI_SERVER_PORT "8888"        // 默认UDP服务端端口号
 #define CONFIG_DEFAULT_TRANSPORT_MODE "udp_client"                   // 默认传输模式-udp_client模式
 #define CONFIG_DEFAULT_SERIAL_SERIAL_BAUD 921600
 #define CONFIG_DEFAULT_TRANSPORT_SERIAL_BAUD "921600"
 
 //------------------------------------WIFI SSID-----------------------------------------
-#define CONFIG_DEFAULT_WIFI_STA_SSID "bot4"
-#define CONFIG_DEFAULT_WIFI_STA_PSWK "12345678"
+#define CONFIG_DEFAULT_WIFI_STA_SSID "oneKM"
+#define CONFIG_DEFAULT_WIFI_STA_PSWK "88888888"
 
 //--------------------------------------电机相关配置---------------------------------------
 #define CONFIG_DEFAULT_MOTOR_PID_KP "0.625"

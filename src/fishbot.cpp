@@ -222,9 +222,19 @@ void loop_fishbot_control()
     kinematics.update_motor_ticks(micros(), encoders[0].getTicks(), encoders[1].getTicks(), encoders[2].getTicks(), encoders[3].getTicks());
     for (index = 0; index < 4; index++)
     {
-        out_motor_speed[index] = pid_controller[index].update(kinematics.motor_speed(index));
-        // fishlog_debug("pid", "index:%d target:%f current:%f out=%f", index, pid_controller[index].target_, kinematics.motor_speed(index), out_motor_speed[index]);
+        // 目标速度为0时停止控制，解决 #https://fishros.org.cn/forum/topic/1372 问题
+        if (pid_controller[index].target_ == 0)
+        {
+            out_motor_speed[index] = 0;
+        }
+        else
+        {
+            // 使用 pid_controller 控制器对电机速度进行 PID 控制
+            out_motor_speed[index] = pid_controller[index].update(kinematics.motor_speed(index));
+        }
+        // 将 PID 控制器的输出值作为电机的目标速度进行控制
         motor.updateMotorSpeed(index, out_motor_speed[index]);
+        // fishlog_debug("pid", "index:%d target:%f current:%f out=%f", index, pid_controller[index].target_, kinematics.motor_speed(index), out_motor_speed[index]);
     }
 
     // 电量信息
