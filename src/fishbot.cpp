@@ -520,8 +520,8 @@ void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time
         {
             imu.getImuDriverData(imu_data);
 
-            imu_msg.header.stamp.sec = stamp * 1e-3;
-            imu_msg.header.stamp.nanosec = stamp - imu_msg.header.stamp.sec * 1000;
+            imu_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
+            imu_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
 
             imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
             imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
