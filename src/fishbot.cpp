@@ -199,7 +199,7 @@ bool setup_fishbot_transport()
         // 使用 "config.board_name()" 函数获取板子名称,使用 "SerialBT.begin()" 启动蓝牙传输模式
         SerialBT.begin(config.board_name());
         // 将日志输出目标设置为蓝牙串口
-        fishlog_set_target(Serial);
+        fishlog_set_target(SerialBT);
         if (config.microros_serial_id() == 2)
         {
             // 调用 "microros_setup_transport_serial_()" 函数，以启动串口传输模式
