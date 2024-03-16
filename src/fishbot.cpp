@@ -251,7 +251,7 @@ bool create_fishbot_transport()
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
        "imu"));
     // 调用 rclc_subscription_init_default 函数初始化 ROS 2 订阅者，传入节点、消息类型和主题名称。
-    RCSOFTCHECK(rclc_subscription_init_default(
+    RCSOFTCHECK(rclc_subscription_init_best_effort(
         &twist_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
@@ -388,7 +388,7 @@ void loop_fishbot_transport()
     // 该语句用于向MicroROS代理发送ping消息，并检查是否能够收到pong消息。
     // 如果收到pong消息，则保持AGENT_CONNECTED状态，并尝试同步时间。
     case AGENT_CONNECTED:
-        EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+        EXECUTE_EVERY_N_MS(1000, state = (RMW_RET_OK == rmw_uros_ping_agent(400, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
         if (state == AGENT_CONNECTED)
         {
             if (!rmw_uros_epoch_synchronized())
