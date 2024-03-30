@@ -10,7 +10,7 @@ RUN sudo apt update && apt install python3-pip -y && echo "" >> /root/.bashrc &&
 && pio pkg install --global --tool "platformio/tool-mkspiffs" \
 && pio pkg install --global --tool "platformio/tool-mklittlefs"
 
-RUN sudo apt update && apt install ros-humble-ros-bash -y
+RUN sudo apt update && apt install ros-humble-ros-base -y
 
 RUN sudo apt update && sudo apt install -y \
     build-essential \
