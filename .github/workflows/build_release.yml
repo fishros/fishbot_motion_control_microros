@@ -8,10 +8,10 @@ on:
 jobs:
   platformio-build:
     runs-on: ubuntu-latest
-    container: infinitecoding/platformio-for-ci:latest
+    container: fishros2/ros2pio:humble
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Build firmware
-        run: platformio run 
+        run: /bin/bash release.sh
