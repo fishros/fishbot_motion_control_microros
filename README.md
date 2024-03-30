@@ -11,9 +11,9 @@
 
 [1.什么是单片机MCU](https://fishros.com/d2lros2/#/humble/chapt13/get_started/1.%E4%BB%80%E4%B9%88%E6%98%AF%E5%8D%95%E7%89%87%E6%9C%BAMCU)
 [2.微处理器开发平台](https://fishros.com/d2lros2/#/humble/chapt13/get_started/2.%E5%8D%95%E7%89%87%E6%9C%BA%E5%BC%80%E5%8F%91%E5%B9%B3%E5%8F%B0)
-[3.搭建PlateFormIO开发环境](https://fishros.com/d2lros2/#/humble/chapt13/get_started/3.%E6%90%AD%E5%BB%BAPlateFormIO%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83)
+[3.搭建PlatformIO开发环境](https://fishros.com/d2lros2/#/humble/chapt13/get_started/3.%E6%90%AD%E5%BB%BAPlateFormIO%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83)
 [4.PIO工程结构&构建方式](https://fishros.com/d2lros2/#/humble/chapt13/get_started/4.PIO%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84&%E6%9E%84%E5%BB%BA%E6%96%B9%E5%BC%8F)
-[5.第一个HelloWord工程](https://fishros.com/d2lros2/#/humble/chapt13/get_started/5.%E7%AC%AC%E4%B8%80%E4%B8%AAHelloWord%E5%B7%A5%E7%A8%8B)
+[5.第一个HelloWorld工程](https://fishros.com/d2lros2/#/humble/chapt13/get_started/5.%E7%AC%AC%E4%B8%80%E4%B8%AAHelloWord%E5%B7%A5%E7%A8%8B)
 [6.串口通信-接收实验](https://fishros.com/d2lros2/#/humble/chapt13/get_started/6.%E4%B8%B2%E5%8F%A3%E9%80%9A%E4%BF%A1-%E6%8E%A5%E6%94%B6%E5%AE%9E%E9%AA%8C)
 
 ### 2.2  入门篇-从点灯开始学起 
@@ -30,7 +30,7 @@
 [5.通讯协议小课堂-I2C通信](https://fishros.com/d2lros2/#/humble/chapt13/advance/5.%E9%80%9A%E8%AE%AF%E5%8D%8F%E8%AE%AE%E5%B0%8F%E8%AF%BE%E5%A0%82-I2C%E9%80%9A%E4%BF%A1)
  [6.I2C通信实验-点亮OLED](https://fishros.com/d2lros2/#/humble/chapt13/advance/6.I2C%E9%80%9A%E4%BF%A1%E5%AE%9E%E9%AA%8C-%E7%82%B9%E4%BA%AEOLED)
 
-### [2.4 基础篇-MicoRos介绍与安装](https://fishros.com/d2lros2/#/humble/chapt14/%E7%AB%A0%E8%8A%82%E5%AF%BC%E8%AF%BB)
+### [2.4 基础篇-MicroRos介绍与安装](https://fishros.com/d2lros2/#/humble/chapt14/%E7%AB%A0%E8%8A%82%E5%AF%BC%E8%AF%BB)
 
 [1.MicroROS介绍与服务安装](https://fishros.com/d2lros2/#/humble/chapt14/basic/1.MicroROS%E4%BB%8B%E7%BB%8D%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%AE%89%E8%A3%85)
 [2.你的第一个MicroROS节点](https://fishros.com/d2lros2/#/humble/chapt14/basic/2.%E4%BD%A0%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AAMicroROS%E8%8A%82%E7%82%B9)
@@ -40,7 +40,7 @@
 [2.话题发布-上传电量信息](https://fishros.com/d2lros2/#/humble/chapt14/get_started/2.MicroROS-%E8%AF%9D%E9%A2%98%E5%8F%91%E5%B8%83%E5%AE%9E%E7%8E%B0)
 [3.服务实现-两数相加](https://fishros.com/d2lros2/#/humble/chapt14/get_started/3.MicroROS-%E6%9C%8D%E5%8A%A1%E9%80%9A%E4%BF%A1%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%AE%9E%E7%8E%B0)
 
-### 2.6 进阶篇-MicoROS原理与使用进阶
+### 2.6 进阶篇-MicroROS原理与使用进阶
 [1.自定义消息接口](https://fishros.com/d2lros2/#/humble/chapt14/advance/1.%E6%8E%A7%E5%88%B6OLED-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E6%8E%A5%E5%8F%A3)
 [2.做个时钟-系统时间同步](https://fishros.com/d2lros2/#/humble/chapt14/advance/2.%E5%81%9A%E4%B8%AA%E6%97%B6%E9%92%9F-%E7%B3%BB%E7%BB%9F%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5)
 [3.了解传输原理-更换协议](https://fishros.com/d2lros2/#/humble/chapt14/advance/3.%E6%97%A0%E7%BA%BF%E9%80%9A%E8%AE%AF-%E4%BA%86%E8%A7%A3%E4%BC%A0%E8%BE%93%E5%8E%9F%E7%90%86)
@@ -75,26 +75,75 @@
 
 需要提前安装docker，可以使用一键安装进行。
 
+1. WIFI（UDP模式）
 
-WIFI,UDP模式
-
-```
+```bash
+# UDP micro-ROS Agent
 docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host microros/micro-ros-agent:$ROS_DISTRO udp4 --port 8888 -v6
 ```
 
-Serial,串口模式
+2. Serial（串口模式）
 
 ```bash
 # Serial micro-ROS Agent
+# 波特率961200
 docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host microros/micro-ros-agent:$ROS_DISTRO serial --dev /dev/ttyUSB0 -v6 -b 921600
+# 波特率115200
 docker run -it --rm -v /dev:/dev -v /dev/shm:/dev/shm --privileged --net=host microros/micro-ros-agent:$ROS_DISTRO serial --dev /dev/ttyUSB0 -v6 -b 115200
 ```
 
 ## 其他指令 
 
-### Merge BootLoad&Frameware
+### Merge BootLoader & Firmware
 
-```
+1. 使用Docker：
+
+```bash
 export boot_app0_dir="$HOME/.platformio/packages/framework-arduinoespressif32/tools/partitions"
-docker run -it --rm --privileged -v=/dev:/dev  -v $boot_app0_dir:$boot_app0_dir -v `pwd`:`pwd` -w `pwd` fishros2/fishbot-tool esptool.py  --chip esp32 merge_bin -o bin/fishbot_motion_control_v1.0.0.`date +%y%m%d`.bin --flash_mode dio --flash_size 4MB 0x1000 .pio/build/featheresp32/bootloader.bin 0x8000 .pio/build/featheresp32/partitions.bin 0xe000 $boot_app0_dir/boot_app0.bin 0x10000 .pio/build/featheresp32/firmware.bin
+docker run -it --rm --privileged -v=/dev:/dev -v $boot_app0_dir:$boot_app0_dir -v `pwd`:`pwd` -w `pwd` fishros2/fishbot-tool \
+            esptool.py  --chip esp32 \
+                        merge_bin \
+                        -o bin/fishbot_motion_control_v1.0.0.`date +%y%m%d`.bin \
+                        --flash_mode dio \
+                        --flash_size 4MB \
+                        0x1000 .pio/build/featheresp32/bootloader.bin \
+                        0x8000 .pio/build/featheresp32/partitions.bin \
+                        0xe000 $boot_app0_dir/boot_app0.bin \
+                        0x10000 .pio/build/featheresp32/firmware.bin
+```
+
+2. 本地运行`esptool.py`：
+
+```bash
+# 在fishbot_motion_control文件夹下运行
+export boot_app0_dir="$HOME/.platformio/packages/framework-arduinoespressif32/tools/partitions"
+esptool.py  --chip esp32 \
+            merge_bin \
+            -o bin/fishbot_motion_control_v1.0.0.`date +%y%m%d`.bin \
+            --flash_mode dio \
+            --flash_size 4MB \
+            0x1000  .pio/build/featheresp32/bootloader.bin \
+            0x8000  .pio/build/featheresp32/partitions.bin \
+            0xe000  $boot_app0_dir/boot_app0.bin \
+            0x10000 .pio/build/featheresp32/firmware.bin
+```
+
+### Flash Firmware
+
+1. 本机运行`esptool.py`：
+
+```bash
+# 在fishbot_motion_control文件夹下运行
+# 运控板串口名称ttyUSB0
+export firmware="bin/fishbot_motion_control_v1.0.0.`date +%y%m%d`.bin"
+esptool.py -p /dev/ttyUSB0 \
+           -b 460800 \
+           --before default_reset \
+           --after hard_reset \
+           --chip esp32 \
+           write_flash \
+           --flash_mode dio \
+           --flash_size detect \
+           --flash_freq 40m \
+           0x00 $firmware
 ```
