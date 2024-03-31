@@ -22,19 +22,18 @@ jobs:
       - name: Generate file list for bin directory
         id: file_list
         run: |
-          cd bin
-          file_list=$(ls -1 *.bin)  # Only list files ending with .bin
-          echo "::set-output name=files::$file_list"
+          file_list=$(ls -1 bin/*.bin)  # Only list .bin files in the bin directory
+          echo "FILES=$file_list" >> $GITHUB_ENV
+          echo  $file_list
 
       # Create a release and upload release assets
       - name: Create Release and Upload Release Asset
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        # if: startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
           body: New Release.
           draft: false
           prerelease: false
-          files: |
-            ${{ steps.file_list.outputs.files }}
+          files: ${{ env.FILES }}  # Use environment variable instead of steps output
