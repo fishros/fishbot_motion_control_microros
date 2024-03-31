@@ -41,6 +41,6 @@ jobs:
           body: 二驱版本固件及micro-ROS ESP32 库。
           draft: false
           prerelease: false
-          files:
+          files: |
             ${{ env.FILES }}
             .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip
