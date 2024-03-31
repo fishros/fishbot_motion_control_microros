@@ -10,7 +10,7 @@ pio run
 
 rm -rf bin && mkdir bin
 export TNAME='fishbot_motion_control'
-export TVERSION=v1.0.0
+export TVERSION=$GITHUB_REF_NAME
 export TDATA=`date +%y%m%d`
 export BINNAME=`echo $TNAME`_$TVERSION.$TDATA.bin
 

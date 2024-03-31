@@ -2,9 +2,8 @@ name: Build-Release
 
 on:
   push:
-    branches: [main]
     tags:
-      - "v*"
+      - "*"
 
 jobs:
   platformio-build:
@@ -18,29 +17,28 @@ jobs:
       - name: Build firmware
         run: /bin/bash release.sh
 
-      # Compress .pio directory to a zip file
       - name: Compress .pio directory
         run: |
           cd .pio/libdeps/featheresp32/micro_ros_platformio/
           zip -r libmicroros libmicroros
 
-      # Generate a list of files in the bin directory
       - name: Generate file list for bin directory
         id: file_list
         run: |
-          file_list=$(ls -1 bin/*.bin)  # Only list .bin files in the bin directory
+          file_list=$(ls -1 bin/*.bin)
           echo "FILES=$file_list" >> $GITHUB_ENV
+          echo "REF_NAME=$GITHUB_REF_NAME"  >> $GITHUB_ENV
 
-      # Create a release and upload release assets
-      - name: Create Release and Upload Release Asset
+      - name: Create Release and Upload Release Asset  
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          tag_name: ${{ github.ref }}
-          name: FishBot二驱固件 ${{ github.ref }}
-          body: 二驱版本固件及micro-ROS ESP32 库。
-          draft: false
-          prerelease: false
-          files: |
-            ${{ env.FILES }}
+        if: startsWith(github.ref, 'refs/tags/')  
+        with:  
+          tag_name: ${{ github.ref }}  
+          name: ${{ env.REF_NAME }}  
+          body_path: release-notes.md
+          token: ${{ secrets.ACCESS_TOKEN }}
+          draft: false  
+          prerelease: false  
+          files: |  
+            ${{ env.FILES }}  
             .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip
