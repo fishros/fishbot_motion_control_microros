@@ -250,7 +250,7 @@ bool create_fishbot_transport()
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
        "imu"));
-    // 调用 rclc_subscription_init_default 函数初始化 ROS 2 订阅者，传入节点、消息类型和主题名称。
+    // 调用 rclc_subscription_init_best_effort 函数初始化 ROS 2 订阅者，传入节点、消息类型和主题名称。
     RCSOFTCHECK(rclc_subscription_init_best_effort(
         &twist_subscriber,
         &node,

@@ -29,7 +29,9 @@ jobs:
         id: file_list
         run: |
           file_list=$(ls -1 bin/*.bin)  # Only list .bin files in the bin directory
-          echo "FILES=$file_list" >> $GITHUB_ENV
+          echo "$file_list" > file_list.txt  # Write file list to a file
+          echo ".pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip" > file_list.txt
+          echo "FILES=file_list.txt" >> $GITHUB_ENV  # Set environment variable with the file list file
 
       # Create a release and upload release assets
       - name: Create Release and Upload Release Asset
@@ -43,4 +45,4 @@ jobs:
           prerelease: false
           files: |
             ${{ env.FILES }}  # Include bin files
-            .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip
+            
