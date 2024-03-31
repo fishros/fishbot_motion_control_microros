@@ -30,7 +30,7 @@ jobs:
         with:  
           tag_name: ${{ github.ref }}  
           name: Release ${{ github.ref }}  
-          body: TODO New Release.  
+          body: New Release.  
           draft: false  
           prerelease: false  
           files: |  
