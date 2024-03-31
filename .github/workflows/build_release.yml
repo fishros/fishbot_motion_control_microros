@@ -1,17 +1,37 @@
-name: Build-Release
-
-on:
-  push:
-    branches: [ main ]
-
-
-jobs:
-  platformio-build:
-    runs-on: ubuntu-latest
-    container: fishros2/ros2pio:humble
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Build firmware
-        run: /bin/bash release.sh
+name: Build-Release  
+  
+on:  
+  push:  
+    branches: [ main ]  
+  
+jobs:  
+  platformio-build:  
+    runs-on: ubuntu-latest  
+    container: fishros2/ros2pio:humble  
+  
+    steps:  
+      - uses: actions/checkout@v2  
+  
+      - name: Build firmware  
+        run: /bin/bash release.sh  
+  
+      # 生成bin目录下的文件列表  
+      - name: Generate file list for bin directory  
+        id: file_list  
+        run: |  
+          cd bin  
+          file_list=$(ls -1)  
+          echo "::set-output name=files::$file_list"  
+  
+      # 创建发布并上传发布资产  
+      - name: Create Release and Upload Release Asset  
+        uses: softprops/action-gh-release@v1  
+        if: startsWith(github.ref, 'refs/tags/')  
+        with:  
+          tag_name: ${{ github.ref }}  
+          name: Release ${{ github.ref }}  
+          body: TODO New Release.  
+          draft: false  
+          prerelease: false  
+          files: |  
+            ${{ steps.file_list.outputs.files }}
