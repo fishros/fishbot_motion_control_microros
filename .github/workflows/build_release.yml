@@ -3,7 +3,8 @@ name: Build-Release
 on:  
   push:  
     branches: [ main ]  
-  
+    tags:
+        - "v*"
 jobs:  
   platformio-build:  
     runs-on: ubuntu-latest  
