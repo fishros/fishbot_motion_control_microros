@@ -18,13 +18,18 @@ jobs:
       - name: Build firmware
         run: /bin/bash release.sh
 
+      # Compress .pio directory to a zip file
+      - name: Compress .pio directory
+        run: |
+          cd .pio/libdeps/featheresp32/micro_ros_platformio/
+          zip -r libmicroros libmicroros
+
       # Generate a list of files in the bin directory
       - name: Generate file list for bin directory
         id: file_list
         run: |
           file_list=$(ls -1 bin/*.bin)  # Only list .bin files in the bin directory
           echo "FILES=$file_list" >> $GITHUB_ENV
-          echo  $file_list
 
       # Create a release and upload release assets
       - name: Create Release and Upload Release Asset
@@ -32,8 +37,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
-          body: New Release.
+          name: FishBot二驱固件 ${{ github.ref }}
+          body: 二驱版本固件及micro-ROS ESP32 库。
           draft: false
           prerelease: false
-          files: ${{ env.FILES }}  # Use environment variable instead of steps output
+          files: |
+            ${{ env.FILES }}  # Include bin files
+            .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip
