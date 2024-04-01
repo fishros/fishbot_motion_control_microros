@@ -6,8 +6,24 @@ on:
       - "*"
 
 jobs:
-  platformio-build:
+  build-docker:
     runs-on: ubuntu-latest
+    steps:
+    - name: Docker login
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }} 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build -f Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ros2pio:humble .
+    - name: Docker image push
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/ros2pio:humble
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: build-docker
     container: fishros2/ros2pio:humble
 
     steps:
