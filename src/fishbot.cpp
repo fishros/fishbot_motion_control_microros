@@ -524,8 +524,8 @@ void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time
             imu_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
 
             imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
-            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
-            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
+            imu_msg.angular_velocity.y = imu_data.angular_velocity.y;
+            imu_msg.angular_velocity.z = imu_data.angular_velocity.z;
 
             imu_msg.linear_acceleration.x = imu_data.linear_acceleration.x;
             imu_msg.linear_acceleration.y = imu_data.linear_acceleration.y;
