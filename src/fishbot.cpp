@@ -11,6 +11,7 @@
 #include "fishbot.h"
 
 /*==================MicroROS消息============================*/
+sensor_msgs__msg__Imu imu_msg;
 geometry_msgs__msg__Twist twist_msg;
 nav_msgs__msg__Odometry odom_msg;
 char odom_frame_id[16];
@@ -21,6 +22,7 @@ static int keyvalue_capacity = 100;
 
 /*==================MicroROS订阅发布者服务========================*/
 rcl_publisher_t odom_publisher;
+rcl_publisher_t imu_publisher;       // 用于发布机器人的IMU信息（Imu）
 rcl_subscription_t twist_subscriber;
 rcl_service_t config_service;
 rcl_wait_set_t wait_set;
@@ -49,6 +51,9 @@ FishBotDisplay display;
 BluetoothSerial SerialBT;
 float battery_voltage;
 OneButton button(0, true);
+MPU6050 mpu(Wire);               // 初始化MPU6050对象
+ImuDriver imu(mpu);              // 初始化Imu对象
+imu_t imu_data;                  // IMU 数据对象
 
 void WiFiEventCB(WiFiEvent_t event)
 {
@@ -100,6 +105,7 @@ bool setup_fishbot()
     encoders[1].init(1, 15, 13);
     encoders[2].init(2, 36, 39);
     encoders[3].init(3, 32, 35);
+    imu.begin(18, 19);//imu初始化
 
     // 3.设置PID
     for (int i = 0; i < 4; i++)
@@ -171,11 +177,28 @@ bool create_fishbot_transport()
     String odom_topic = config.ros2_odom_topic_name();
     String odom_frameid_str = config.ros2_odom_frameid();
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    imu_msg.header.frame_id = micro_ros_string_utilities_set(imu_msg.header.frame_id, "imu");
+    odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
     const unsigned int timer_timeout = config.odom_publish_period();
     delay(500);
     allocator = rcl_get_default_allocator();
     RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
     RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
+    // rcl_ret_t imu_pub_init_status = rclc_publisher_init_best_effort(
+    //     &imu_publisher,
+    //     &node,
+    //     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+    //     "imu");
+    // if (imu_pub_init_status != RCL_RET_OK) {
+    //     Serial.print("Failed to initialize IMU publisher with error: ");
+    //     Serial.println(imu_pub_init_status);
+    // }
+    //调用 rclc_timer_init_default 函数初始化 ROS 2 定时器，传入支持库、定时器周期和回调函数
+    RCSOFTCHECK(rclc_publisher_init_best_effort(
+        &imu_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "imu"));
     RCSOFTCHECK(rclc_publisher_init_best_effort(
         &odom_publisher,
         &node,
@@ -191,7 +214,8 @@ bool create_fishbot_transport()
         &node,
         ROSIDL_GET_SRV_TYPE_SUPPORT(fishbot_interfaces, srv, FishBotConfig),
         "/fishbot_config"));
-    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
+    RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_sensor_publisher_timer_));
+    //RCSOFTCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(timer_timeout), callback_odom_publisher_timer_));
     RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     RCSOFTCHECK(rclc_executor_add_subscription(&executor, &twist_subscriber, &twist_msg, &callback_twist_subscription_, ON_NEW_DATA));
     RCSOFTCHECK(rclc_executor_add_timer(&executor, &timer));
@@ -205,6 +229,7 @@ bool destory_fishbot_transport()
     (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
     RCSOFTCHECK(rcl_publisher_fini(&odom_publisher, &node));
+    RCSOFTCHECK(rcl_publisher_fini(&imu_publisher, &node));
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
     RCSOFTCHECK(rcl_service_fini(&config_service, &node));
     RCSOFTCHECK(rcl_timer_fini(&timer));
@@ -247,6 +272,7 @@ void loop_fishbot_control()
     display.updateCurrentTime(rmw_uros_epoch_millis());
     display.updateDisplay();
     button.tick();
+    imu.update();
 }
 
 void loop_fishbot_transport()
@@ -270,9 +296,11 @@ void loop_fishbot_transport()
     switch (state)
     {
     case WAITING_AGENT:
+        //Serial.print(F("0 "));
         EXECUTE_EVERY_N_MS(500, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
         break;
     case AGENT_AVAILABLE:
+        //Serial.print(F("1 "));
         state = (true == create_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
         if (state == WAITING_AGENT)
         {
@@ -280,6 +308,7 @@ void loop_fishbot_transport()
         };
         break;
     case AGENT_CONNECTED:
+        //Serial.print(F("2 "));
         EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
         if (state == AGENT_CONNECTED)
         {
@@ -298,6 +327,7 @@ void loop_fishbot_transport()
         }
         break;
     case AGENT_DISCONNECTED:
+        //Serial.print(F("3"));
         destory_fishbot_transport();
         state = WAITING_AGENT;
         break;
@@ -340,7 +370,12 @@ bool microros_setup_transport_serial_()
     String twist_topic = config.ros2_twist_topic_name();
     String odom_topic = config.ros2_odom_topic_name();
     String odom_frameid_str = config.ros2_odom_frameid();
+    // 用于将odom_frameid_str的C字符串值设置为odom_msg的帧ID。
+    // 该函数会将odom_msg中的帧ID指针所指向的字符串缓冲区中的数据替换为odom_frameid_str的C字符串值，并返回指向新字符串的指针。
+    // 这样可以确保odom_msg的帧ID与配置中的值一致。
     odom_msg.header.frame_id = micro_ros_string_utilities_set(odom_msg.header.frame_id, odom_frameid_str.c_str());
+    //odom_msg.child_frame_id = micro_ros_string_utilities_set(odom_msg.child_frame_id, odom_frameid_str.c_str());
+    imu_msg.header.frame_id = micro_ros_string_utilities_set(imu_msg.header.frame_id, "imu");
     const unsigned int timer_timeout = config.odom_publish_period();
     // 初始化数据接收配置
     config_req.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
@@ -355,33 +390,6 @@ bool microros_setup_transport_serial_()
     }
     return true;
 }
-
-void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
-{
-    RCLC_UNUSED(last_call_time);
-    if (timer != NULL)
-    {
-        odom_t odom = kinematics.odom();
-        int64_t stamp = rmw_uros_epoch_millis();
-        odom_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
-        odom_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
-        odom_msg.pose.pose.position.x = odom.x;
-        odom_msg.pose.pose.position.y = odom.y;
-        odom_msg.pose.pose.orientation.w = odom.quaternion.w;
-        odom_msg.pose.pose.orientation.x = odom.quaternion.x;
-        odom_msg.pose.pose.orientation.y = odom.quaternion.y;
-        odom_msg.pose.pose.orientation.z = odom.quaternion.z;
-        odom_msg.twist.twist.angular.z = odom.angular_speed;
-        odom_msg.twist.twist.linear.x = odom.linear_x_speed;
-        odom_msg.twist.twist.linear.y = odom.linear_y_speed;
-
-        display.updateBotAngular(odom.angular_speed);
-        display.updateBotLinear(odom.linear_x_speed);
-
-        RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
-    }
-}
-
 void callback_twist_subscription_(const void *msgin)
 {
     const geometry_msgs__msg__Twist *msg = (const geometry_msgs__msg__Twist *)msgin;
@@ -424,4 +432,62 @@ void callback_config_service_(const void *req, void *res)
     fishlog_debug("fishbot", "current_str:%s", config.config_str().c_str());
     sprintf(res_in->key.data, "%s", req_in->key.data);
     sprintf(res_in->value.data, "%s", req_in->key.data);
+}
+
+void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time)
+{
+    RCLC_UNUSED(last_call_time);
+    if (timer != NULL)
+    {
+        // 用于获取当前的时间戳，并将其存储在消息的头部中
+        int64_t stamp = rmw_uros_epoch_millis();
+        // 获取机器人的位置和速度信息，并将其存储在一个ROS消息（odom_msg）中
+        odom_t odom = kinematics.odom();
+        odom_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
+        odom_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
+        odom_msg.pose.pose.position.x = odom.x;
+        odom_msg.pose.pose.position.y = odom.y;
+        odom_msg.pose.pose.orientation.w = odom.quaternion.w;
+        odom_msg.pose.pose.orientation.x = odom.quaternion.x;
+        odom_msg.pose.pose.orientation.y = odom.quaternion.y;
+        odom_msg.pose.pose.orientation.z = odom.quaternion.z;
+
+        odom_msg.twist.twist.angular.z = odom.angular_speed;
+        odom_msg.twist.twist.linear.x = odom.linear_x_speed;
+        odom_msg.twist.twist.linear.y = odom.linear_y_speed;
+
+        display.updateBotAngular(odom.angular_speed);
+        display.updateBotLinear(odom.linear_x_speed);
+        display.updateBotLinear(odom.linear_y_speed);
+
+        RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+
+        if (imu.isEnable())
+        {
+            imu.getImuDriverData(imu_data);
+
+            imu_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
+            imu_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
+
+            imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
+            imu_msg.angular_velocity.y = imu_data.angular_velocity.y;
+            imu_msg.angular_velocity.z = imu_data.angular_velocity.z;
+
+            imu_msg.linear_acceleration.x = imu_data.linear_acceleration.x;
+            imu_msg.linear_acceleration.y = imu_data.linear_acceleration.y;
+            imu_msg.linear_acceleration.z = imu_data.linear_acceleration.z;
+
+            imu_msg.orientation.x = imu_data.orientation.x;
+            imu_msg.orientation.y = imu_data.orientation.y;
+            imu_msg.orientation.z = imu_data.orientation.z;
+            imu_msg.orientation.w = imu_data.orientation.w;
+
+            RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
+            // rcl_ret_t publish_status = rcl_publish(&imu_publisher, &imu_msg, NULL);
+            // if (publish_status != RCL_RET_OK) {
+            // Serial.println("Failed to publish IMU data!");
+            // Serial.println(publish_status);
+            // }
+        }
+    }
 }

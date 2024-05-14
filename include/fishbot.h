@@ -38,6 +38,9 @@
 #include "fishbot_display.h"
 #include "fishbot_utils.h"
 
+#include "ImuDriver.h"
+#include "sensor_msgs/msg/imu.h"
+
 #define RCSOFTCHECK(fn)                                                                           \
     {                                                                                             \
         rcl_ret_t temp_rc = fn;                                                                   \
@@ -76,7 +79,7 @@ void loop_fishbot_transport();
 bool microros_setup_transport_udp_client_();
 bool microros_setup_transport_serial_();
 
-void callback_odom_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time);
+void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time);
 void callback_twist_subscription_(const void *msgin);
 void callback_config_service_(const void *req, void *res);
 
