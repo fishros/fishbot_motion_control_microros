@@ -84,6 +84,7 @@ void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info)
     // 处理当 ESP32 成功连接到 WiFi 并获取到 IP 地址时的情况
     case SYSTEM_EVENT_STA_GOT_IP:
         // 更新机器人的 IP 地址信息
+        display.updateWIFIInfo("got ip", FISHBOT_WIFI_STATUS_GOT_IP);
         display.updateWIFIIp(WiFi.localIP().toString());
         break;
     // 处理当 ESP32 失去 WiFi 连接时的情况
@@ -400,6 +401,10 @@ void loop_fishbot_transport()
     // 如果创建成功，则继续保持AGENT_CONNECTED状态；否则将状态设置为WAITING_AGENT，并销毁fishbot传输。
     case AGENT_AVAILABLE:
         state = (true == create_fishbot_transport()) ? AGENT_CONNECTED : WAITING_AGENT;
+        if (state == AGENT_CONNECTED)
+        {
+            display.updateWIFIInfo("ping ok", FISHBOT_WIFI_STATUS_OK);
+        }
         if (state == WAITING_AGENT)
         {
             destory_fishbot_transport();
@@ -468,11 +473,14 @@ bool microros_setup_transport_udp_client_()
     config_res.key = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
     config_res.value = micro_ros_string_utilities_init_with_size(keyvalue_capacity);
 
+    display.updateWIFISSID(ssid);
+    display.updateWIFIPSWD(password);
+    display.updateWIFIServerIp(ip + ":" + String(agent_port));
+
     IPAddress agent_ip;
     // 将IP地址转换为IPAddress类型
     agent_ip.fromString(ip);
     // 调用set_microros_wifi_transports函数，该函数用于设置MicroROS的WiFi传输，并将WiFi的SSID、密码、代理IP地址、代理端口和设备名称传递给它
-    display.updateWIFIServerIp(ip + ":" + String(agent_port));
     if (!set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port, config.board_name()))
     {
         return false;

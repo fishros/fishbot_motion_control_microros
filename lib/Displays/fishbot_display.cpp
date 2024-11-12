@@ -37,7 +37,7 @@ void FishBotDisplay::updateDisplay()
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
-        _display.println(version_code_);
+        _display.println(String("  ")+version_code_);
         _display.print("microros:");
         _display.println(mode_);
         if (mode_ == "udp_client")
@@ -55,7 +55,7 @@ void FishBotDisplay::updateDisplay()
                 _display.println(bot_angular_);
             }
             // ping 失败，则显示当前ip，服务ip和wifi名称
-            else if (wifi_status_ == FISHBOT_WIFI_STATUS_PING_FAILED)
+            else if (wifi_status_ == FISHBOT_WIFI_STATUS_PING_FAILED || wifi_status_==FISHBOT_WIFI_STATUS_GOT_IP)
             {
                 _display.print("wifi:");
                 _display.println(wifi_info_);
