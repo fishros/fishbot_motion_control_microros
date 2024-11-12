@@ -58,12 +58,29 @@ imu_t imu_data;                  // IMU 数据对象
 
 // WiFiEventCB 的回调函数,捕获 ESP32 系统中的 WiFi 事件
 // WiFiEvent_t event 是一个 WiFi 事件类型的变量，用于存储捕获到的 WiFi 事件。
-void WiFiEventCB(WiFiEvent_t event)
+void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     Serial.println("WIFI EVENT!");
     // 根据不同的 WiFi 事件类型进行不同的处理
     switch (event)
     {
+        // 断开连接原因提示
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+        fishlog_debug("wifi", "WIFI DISCONNECTED REASON:%d", info.wifi_sta_disconnected.reason);
+        if (info.wifi_sta_disconnected.reason == 15)
+        {
+            display.updateWIFIInfo("password error", FISHBOT_WIFI_STATUS_PASD_ERROR);
+        }
+        else if (info.wifi_sta_disconnected.reason == 201)
+        {
+            display.updateWIFIInfo("wifi not found", FISHBOT_WIFI_STATUS_NO_FOUND);
+        }
+        else
+        {
+            display.updateWIFIInfo(String("unknow:") + String(int(info.wifi_sta_disconnected.reason)), FISHBOT_WIFI_STATUS_UNKNOW);
+        }
+        break;
+
     // 处理当 ESP32 成功连接到 WiFi 并获取到 IP 地址时的情况
     case SYSTEM_EVENT_STA_GOT_IP:
         // 更新机器人的 IP 地址信息
@@ -72,7 +89,7 @@ void WiFiEventCB(WiFiEvent_t event)
     // 处理当 ESP32 失去 WiFi 连接时的情况
     case SYSTEM_EVENT_STA_LOST_IP:
         // 调用 display.updateWIFIIp 函数，显示 "wait connect!"
-        display.updateWIFIIp("wait connect!");
+        display.updateWIFIInfo("wait connect", FISHBOT_WIFI_STATUS_WAIT_CONNECT);
         break;
     };
 }
@@ -115,7 +132,7 @@ bool setup_fishbot()
         Serial2.begin(115200);
     }
     // 初始化LED
-    pinMode(2,OUTPUT);
+    pinMode(2, OUTPUT);
     // 初始化显示
     display.updateVersionCode(VERSION_CODE);
     display.init();
@@ -192,6 +209,7 @@ bool setup_fishbot_transport()
         // 将日志输出目标设置为串口，并注册一个回调函数 "WiFiEventCB"，以便在 WiFi 连接状态发生变化时进行处理。
         fishlog_set_target(Serial);
         WiFi.onEvent(WiFiEventCB);
+        // WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
         // 启动 UDP 客户端传输模式，并更新显示器的传输模式为 "udp_client"
         setup_success = microros_setup_transport_udp_client_();
         display.updateTransMode("udp_client");
@@ -392,6 +410,10 @@ void loop_fishbot_transport()
     // 如果收到pong消息，则保持AGENT_CONNECTED状态，并尝试同步时间。
     case AGENT_CONNECTED:
         EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+        if (state == AGENT_DISCONNECTED)
+        {
+            display.updateWIFIInfo("ping timeout", FISHBOT_WIFI_STATUS_PING_FAILED);
+        }
         if (state == AGENT_CONNECTED)
         {
             if (!rmw_uros_epoch_synchronized())
@@ -411,7 +433,7 @@ void loop_fishbot_transport()
                 return;
             }
             // 闪烁LED
-            digitalWrite(2,!digitalRead(2)); 
+            digitalWrite(2, !digitalRead(2));
             // 函数调用rclc_executor_spin_some函数，在100毫秒内执行一些待处理的 ROS2 消息。
             RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
         }
@@ -450,6 +472,7 @@ bool microros_setup_transport_udp_client_()
     // 将IP地址转换为IPAddress类型
     agent_ip.fromString(ip);
     // 调用set_microros_wifi_transports函数，该函数用于设置MicroROS的WiFi传输，并将WiFi的SSID、密码、代理IP地址、代理端口和设备名称传递给它
+    display.updateWIFIServerIp(ip + ":" + String(agent_port));
     if (!set_microros_wifi_transports((char *)ssid.c_str(), (char *)password.c_str(), agent_ip, agent_port, config.board_name()))
     {
         return false;

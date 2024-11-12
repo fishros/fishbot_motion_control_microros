@@ -19,10 +19,9 @@ void FishBotDisplay::init()
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
     _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
-    _display.println(version_code_);             // 输出的字符
+    _display.println(version_code_);            // 输出的字符
     _display.println("");
-    _display.println("...");
-    _display.println("connect microros agent...");
+    _display.println("syetem starting...");
     _display.display();
 }
 
@@ -41,24 +40,56 @@ void FishBotDisplay::updateDisplay()
         _display.println(version_code_);
         _display.print("microros:");
         _display.println(mode_);
-        _display.print("time :");
-        _display.println(timenow);
         if (mode_ == "udp_client")
         {
-            _display.print("ip   :");
-            _display.println(ip_);
+            // 连接成功显示当前ip，电压，线速度和角速度
+            if (wifi_status_ == FISHBOT_WIFI_STATUS_OK)
+            {
+                _display.print("ip:");
+                _display.println(wifi_ip_);
+                _display.print("voltage :");
+                _display.println(battery_info_);
+                _display.print("linear  :");
+                _display.println(bot_linear_);
+                _display.print("angular :");
+                _display.println(bot_angular_);
+            }
+            // ping 失败，则显示当前ip，服务ip和wifi名称
+            else if (wifi_status_ == FISHBOT_WIFI_STATUS_PING_FAILED)
+            {
+                _display.print("wifi:");
+                _display.println(wifi_info_);
+                _display.print("ip:");
+                _display.println(wifi_ip_);
+                _display.print("ssid:");
+                _display.println(wifi_ssid_);
+                _display.print("sip:");
+                _display.println(wifi_server_ip_);
+            }
+            // 找不到wifi，密码错误，则显示wifi名称，密码
+            else
+            {
+                _display.print("wifi:");
+                _display.println(wifi_info_);
+                _display.print("ssid:");
+                _display.println(wifi_ssid_);
+                _display.print("pswd:");
+                _display.println(wifi_pswd_);
+            }
         }
         else
         {
+            _display.print("time :");
+            _display.println(timenow);
             _display.print("baud :");
             _display.println(baudrate_);
+            _display.print("voltage :");
+            _display.println(battery_info_);
+            _display.print("linear  :");
+            _display.println(bot_linear_);
+            _display.print("angular :");
+            _display.println(bot_angular_);
         }
-        _display.print("voltage :");
-        _display.println(battery_info_);
-        _display.print("linear  :");
-        _display.println(bot_linear_);
-        _display.print("angular :");
-        _display.println(bot_angular_);
         _display.display();
     }
 }
@@ -88,12 +119,25 @@ void FishBotDisplay::updateTransMode(String mode)
 {
     mode_ = mode;
 }
+void FishBotDisplay::updateWIFIServerIp(String server_ip)
+{
+    wifi_server_ip_ = server_ip;
+}
 void FishBotDisplay::updateWIFIIp(String ip)
 {
-    if (ip != ip_)
+    if (wifi_ip_ != ip)
     {
-        ip_ = ip;
+        wifi_ip_ = ip;
     }
+    // 判断LocalIP 和 Server IP 是否在同一个子网，不在则 WARN
+}
+void FishBotDisplay::updateWIFIInfo(String info, fishbot_wifi_status_t status)
+{
+    if (wifi_info_ != info)
+    {
+        wifi_info_ = info;
+    }
+    wifi_status_ = status;
 }
 void FishBotDisplay::updateCurrentTime(int64_t current_time_)
 {
