@@ -42,8 +42,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')  
         with:  
-          tag_name: ${{ github.ref }}  
-          name: ${{ env.REF_NAME }}  
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
           body_path: release-notes.md
           token: ${{ secrets.ACCESS_TOKEN }}
           draft: false  
