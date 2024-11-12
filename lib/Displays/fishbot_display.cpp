@@ -19,7 +19,8 @@ void FishBotDisplay::init()
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
     _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
-    _display.println(version_code_);            // 输出的字符
+    _display.print("    ");
+    _display.println(version_code_); // 输出的字符
     _display.println("");
     _display.println("syetem starting...");
     _display.display();
@@ -37,14 +38,17 @@ void FishBotDisplay::updateDisplay()
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
-        _display.println(String("  ")+version_code_);
-        _display.print("microros:");
+        _display.print("    ");
+        _display.println(version_code_);
+        _display.print("mode:");
         _display.println(mode_);
         if (mode_ == "udp_client")
         {
             // 连接成功显示当前ip，电压，线速度和角速度
             if (wifi_status_ == FISHBOT_WIFI_STATUS_OK)
             {
+                _display.print("time :");
+                _display.println(timenow);
                 _display.print("ip:");
                 _display.println(wifi_ip_);
                 _display.print("voltage :");
@@ -55,7 +59,7 @@ void FishBotDisplay::updateDisplay()
                 _display.println(bot_angular_);
             }
             // ping 失败，则显示当前ip，服务ip和wifi名称
-            else if (wifi_status_ == FISHBOT_WIFI_STATUS_PING_FAILED || wifi_status_==FISHBOT_WIFI_STATUS_GOT_IP)
+            else if (wifi_status_ == FISHBOT_WIFI_STATUS_PING_FAILED || wifi_status_ == FISHBOT_WIFI_STATUS_GOT_IP)
             {
                 _display.print("wifi:");
                 _display.println(wifi_info_);

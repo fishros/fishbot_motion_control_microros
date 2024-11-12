@@ -394,7 +394,11 @@ void loop_fishbot_transport()
     // 如果收到pong消息，则将状态设置为AGENT_AVAILABLE；否则保持等待状态。
     case WAITING_AGENT:
         EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_AVAILABLE : WAITING_AGENT;);
-        // fishlog_debug("ros2", "current state2:%d", state);
+        digitalWrite(2, !digitalRead(2));
+        if (state == WAITING_AGENT)
+        {
+            display.updateWIFIInfo("ping timeout", FISHBOT_WIFI_STATUS_PING_FAILED);
+        }
         break;
 
     // 对于AGENT_AVAILABLE状态，函数将尝试创建fishbot传输，并将状态设置为AGENT_CONNECTED。
