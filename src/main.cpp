@@ -23,7 +23,7 @@ void fishbot_loop_transport_task(void *param)
 void setup()
 {
   setup_fishbot();
-  xTaskCreatePinnedToCore(fishbot_loop_transport_task, "fishbot_loop_transport_task", 10240, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(fishbot_loop_transport_task, "transport_task", 10240, NULL, 1, NULL, 0);
 }
 
 void loop()
