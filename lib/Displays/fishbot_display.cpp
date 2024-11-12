@@ -9,6 +9,7 @@
  *
  */
 #include "fishbot_display.h"
+#include "fishbot_config.h"
 
 void FishBotDisplay::init()
 {
@@ -19,7 +20,7 @@ void FishBotDisplay::init()
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
     _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
-    _display.println("  [fishbot-v1.0.0]");     // 输出的字符
+    _display.println(VERSION_CODE);     // 输出的字符
     _display.println("");
     _display.println("...");
     _display.println("connect microros agent...");
@@ -38,7 +39,7 @@ void FishBotDisplay::updateDisplay()
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
-        _display.println("   -fishbot-v1.0.0-");
+        _display.println(VERSION_CODE);
         _display.print("microros:");
         _display.println(mode_);
         _display.print("time :");
@@ -117,7 +118,7 @@ void FishBotDisplay::updateStartupInfo()
     last_update_time = millis();
     _display.clearDisplay();
     _display.setCursor(0, 0);
-    _display.println("   -fishbot-v1.0.0-");
+    _display.println(VERSION_CODE);
     _display.print("microros:");
     _display.println(mode_);
     _display.print("voltage :");
