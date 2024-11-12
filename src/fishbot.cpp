@@ -39,7 +39,8 @@ enum states
     AGENT_AVAILABLE,
     AGENT_CONNECTED,
     AGENT_DISCONNECTED
-} state; // 定义了一个枚举类型 states，用于表示机器人当前的状态
+} state;                           // 定义了一个枚举类型 states，用于表示机器人当前的状态
+fishbot_wifi_status_t wifi_status; // 创建WIFI状态存储
 
 /*========================FishBot控制相关====================*/
 // Stream *microros_serial;         // Serial 模式下microros使用的串口指针
@@ -70,26 +71,31 @@ void WiFiEventCB(WiFiEvent_t event, WiFiEventInfo_t info)
         if (info.wifi_sta_disconnected.reason == 15)
         {
             display.updateWIFIInfo("password error", FISHBOT_WIFI_STATUS_PASD_ERROR);
+            wifi_status = FISHBOT_WIFI_STATUS_PASD_ERROR;
         }
         else if (info.wifi_sta_disconnected.reason == 201)
         {
             display.updateWIFIInfo("wifi not found", FISHBOT_WIFI_STATUS_NO_FOUND);
+            wifi_status = FISHBOT_WIFI_STATUS_NO_FOUND;
         }
         else
         {
             display.updateWIFIInfo(String("unknow:") + String(int(info.wifi_sta_disconnected.reason)), FISHBOT_WIFI_STATUS_UNKNOW);
+            wifi_status = FISHBOT_WIFI_STATUS_UNKNOW;
         }
         break;
 
     // 处理当 ESP32 成功连接到 WiFi 并获取到 IP 地址时的情况
     case SYSTEM_EVENT_STA_GOT_IP:
         // 更新机器人的 IP 地址信息
+        wifi_status = FISHBOT_WIFI_STATUS_GOT_IP;
         display.updateWIFIInfo("got ip", FISHBOT_WIFI_STATUS_GOT_IP);
         display.updateWIFIIp(WiFi.localIP().toString());
         break;
     // 处理当 ESP32 失去 WiFi 连接时的情况
     case SYSTEM_EVENT_STA_LOST_IP:
         // 调用 display.updateWIFIIp 函数，显示 "wait connect!"
+        wifi_status = FISHBOT_WIFI_STATUS_WAIT_CONNECT;
         display.updateWIFIInfo("wait connect", FISHBOT_WIFI_STATUS_WAIT_CONNECT);
         break;
     };
@@ -395,7 +401,7 @@ void loop_fishbot_transport()
     case WAITING_AGENT:
         EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_AVAILABLE : WAITING_AGENT;);
         digitalWrite(2, !digitalRead(2));
-        if (state == WAITING_AGENT)
+        if (state == WAITING_AGENT && wifi_status==FISHBOT_WIFI_STATUS_GOT_IP)
         {
             display.updateWIFIInfo("ping timeout", FISHBOT_WIFI_STATUS_PING_FAILED);
         }
@@ -419,7 +425,7 @@ void loop_fishbot_transport()
     // 如果收到pong消息，则保持AGENT_CONNECTED状态，并尝试同步时间。
     case AGENT_CONNECTED:
         EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
-        if (state == AGENT_DISCONNECTED)
+        if (state == AGENT_DISCONNECTED && wifi_status==FISHBOT_WIFI_STATUS_GOT_IP)
         {
             display.updateWIFIInfo("ping timeout", FISHBOT_WIFI_STATUS_PING_FAILED);
         }
