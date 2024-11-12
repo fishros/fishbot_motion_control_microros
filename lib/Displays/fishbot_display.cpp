@@ -19,7 +19,7 @@ void FishBotDisplay::init()
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
     _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
-    _display.print("version");
+    _display.print("    ");
     _display.println(version_code_); // 输出的字符
     _display.println("");
     _display.println("syetem starting...");
@@ -38,7 +38,7 @@ void FishBotDisplay::updateDisplay()
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
-        _display.print("version");
+        _display.print("    ");
         _display.println(version_code_);
         _display.print("mode:");
         _display.println(mode_);
@@ -171,7 +171,7 @@ void FishBotDisplay::updateStartupInfo()
     last_update_time = millis();
     _display.clearDisplay();
     _display.setCursor(0, 0);
-    _display.print("version:");
+    _display.print("    ");
     _display.println(version_code_); // 输出的字符
     _display.print("mode:");
     _display.println(mode_);
