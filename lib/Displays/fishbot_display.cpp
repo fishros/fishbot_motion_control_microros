@@ -9,7 +9,6 @@
  *
  */
 #include "fishbot_display.h"
-#include "fishbot_config.h"
 
 void FishBotDisplay::init()
 {
@@ -20,7 +19,7 @@ void FishBotDisplay::init()
     _display.setTextSize(1);                    // 设置字体大小
     _display.setTextColor(SSD1306_WHITE);       // 设置字体颜色
     _display.setCursor(0, 0);                   // 设置开始显示文字的坐标
-    _display.println(VERSION_CODE);     // 输出的字符
+    _display.println(version_code_);             // 输出的字符
     _display.println("");
     _display.println("...");
     _display.println("connect microros agent...");
@@ -39,7 +38,7 @@ void FishBotDisplay::updateDisplay()
         last_update_time = millis();
         _display.clearDisplay();
         _display.setCursor(0, 0);
-        _display.println(VERSION_CODE);
+        _display.println(version_code_);
         _display.print("microros:");
         _display.println(mode_);
         _display.print("time :");
@@ -63,6 +62,12 @@ void FishBotDisplay::updateDisplay()
         _display.display();
     }
 }
+
+void FishBotDisplay::updateVersionCode(String version_code)
+{
+    version_code_ = version_code;
+}
+
 void FishBotDisplay::updateBatteryInfo(float &battery_info)
 {
     battery_info_ = battery_info;
@@ -118,7 +123,7 @@ void FishBotDisplay::updateStartupInfo()
     last_update_time = millis();
     _display.clearDisplay();
     _display.setCursor(0, 0);
-    _display.println(VERSION_CODE);
+    _display.println(version_code_);
     _display.print("microros:");
     _display.println(mode_);
     _display.print("voltage :");

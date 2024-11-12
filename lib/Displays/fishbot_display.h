@@ -27,6 +27,7 @@ private:
     uint32_t baudrate_;
     String mode_;
     String ip_="wait connect!";
+    String version_code_;
     uint8_t display_mode_;
 
     int64_t current_time ;
@@ -51,6 +52,7 @@ public:
     void updateWIFIIp(String ip);
     void updateWIFISSID(String ssid);
     void updateWIFIPSWD(String pswd);
+    void updateVersionCode(String version_code);
     String twoDigits(int digits);
     FishBotDisplay();
     ~FishBotDisplay() = default;

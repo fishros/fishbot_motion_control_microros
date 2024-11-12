@@ -114,7 +114,10 @@ bool setup_fishbot()
     {
         Serial2.begin(115200);
     }
+    // 初始化LED
+    pinMode(2,OUTPUT);
     // 初始化显示
+    display.updateVersionCode(VERSION_CODE);
     display.init();
     display.updateTransMode(config.microros_transport_mode());
     display.updateBaudRate(config.serial_baudrate());
@@ -249,7 +252,7 @@ bool create_fishbot_transport()
         &imu_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-       "imu"));
+        "imu"));
     // 调用 rclc_subscription_init_best_effort 函数初始化 ROS 2 订阅者，传入节点、消息类型和主题名称。
     RCSOFTCHECK(rclc_subscription_init_best_effort(
         &twist_subscriber,
@@ -407,6 +410,8 @@ void loop_fishbot_transport()
                 delay(10);
                 return;
             }
+            // 闪烁LED
+            digitalWrite(2,!digitalRead(2)); 
             // 函数调用rclc_executor_spin_some函数，在100毫秒内执行一些待处理的 ROS2 消息。
             RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
         }
@@ -499,7 +504,7 @@ void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time
         int64_t stamp = rmw_uros_epoch_millis();
         // 获取机器人的位置和速度信息，并将其存储在一个ROS消息（odom_msg）中
         odom_t odom = kinematics.odom();
-        odom_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
+        odom_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000);              // 秒部分
         odom_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
         odom_msg.pose.pose.position.x = odom.x;
         odom_msg.pose.pose.position.y = odom.y;
@@ -520,7 +525,7 @@ void callback_sensor_publisher_timer_(rcl_timer_t *timer, int64_t last_call_time
         {
             imu.getImuDriverData(imu_data);
 
-            imu_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000); // 秒部分
+            imu_msg.header.stamp.sec = static_cast<int32_t>(stamp / 1000);              // 秒部分
             imu_msg.header.stamp.nanosec = static_cast<uint32_t>((stamp % 1000) * 1e6); // 纳秒部分
 
             imu_msg.angular_velocity.x = imu_data.angular_velocity.x;
