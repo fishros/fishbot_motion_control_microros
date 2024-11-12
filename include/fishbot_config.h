@@ -128,8 +128,8 @@
 #define CONFIG_NAME_MOTOR1_PARAM_WHEEL_DIAMETER "motor1_wheel_diameter"
 #define CONFIG_NAME_KINEMATIC_WHEEL_DISTANCE "wheel_dist"
 
-#define VERSION_CODE "v1.7.0.alpha"
-#define FIRST_START_TIP "=================================================\n     wwww.fishros.com        \nfishbot-motion-control-v1.7.0.alpha\n=================================================\n"
+#define VERSION_CODE "{VERSION}"
+#define FIRST_START_TIP "=================================================\n     wwww.fishros.com        \nfishbot-motion-control-{VERSION}\n=================================================\n"
 
 typedef enum
 {
