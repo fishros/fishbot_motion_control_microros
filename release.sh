@@ -2,11 +2,8 @@ export PATH=/home/runner/.platformio/penv/bin:/usr/local/bin/:$PATH
 
 # 替换VERSION_CODE
 sed -i "s/{VERSION}/$GITHUB_REF_NAME/g" include/fishbot_config.h
- 
-# source /opt/ros/humble/setup.bash
-# mkdir -p /github/home/.platformio/penv/bin/
-# touch /github/home/.platformio/penv/bin/activate
-pio run
+pip3 install esptool
+pio lib install # Install dependencies
 cp .config/microros/colcon.meta .pio/libdeps/featheresp32/micro_ros_platformio/metas/colcon.meta
 rm -rf .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros/
 pio run
