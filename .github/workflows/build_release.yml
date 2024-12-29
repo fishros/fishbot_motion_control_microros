@@ -32,8 +32,8 @@ jobs:
 
       - name: Compress .pio directory
         run: |
-          cd .pio/libdeps/featheresp32/micro_ros_platformio/
-          zip -r libmicroros libmicroros
+          cd .pio/libdeps/fishbot_motion_control_humble/micro_ros_platformio/
+          zip -r libmicroros libmicroros_humble
 
       - name: Create Release and Upload Release Asset  
         uses: softprops/action-gh-release@v1
@@ -47,4 +47,4 @@ jobs:
           prerelease: false  
           files: |  
             ./bin/*
-            .pio/libdeps/featheresp32/micro_ros_platformio/libmicroros.zip
+            .pio/libdeps/fishbot_motion_control_humble/micro_ros_platformio/libmicroros_humble.zip
