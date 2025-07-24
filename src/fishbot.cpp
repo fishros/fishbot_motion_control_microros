@@ -29,6 +29,7 @@ rcl_wait_set_t wait_set;             // 用于管理一组等待中的事件，�
 
 /*==================MicroROS相关执行器&节点===================*/
 rclc_executor_t executor;  // 用于在单个线程中处理多个 ROS 2 资源的回调函数。
+rcl_init_options_t init_options;
 rclc_support_t support;    // 用于在 ROS 2 上下文中初始化和配置执行器、节点等资源
 rcl_allocator_t allocator; // 用于在 ROS 2 节点中分配和释放内存
 rcl_node_t node;           // 代表一个 ROS 2 系统中的节点，用于与其他节点通信
@@ -281,11 +282,23 @@ bool create_fishbot_transport()
     delay(500);
     // 默认的内存分配器 allocator
     allocator = rcl_get_default_allocator();
+
+    // create init_options
+    init_options = rcl_get_zero_initialized_init_options();
+    RCSOFTCHECK(rcl_init_options_init(&init_options, allocator)); // <--- This was missing on ur side
+
+    // Set ROS domain id
+    RCSOFTCHECK(rcl_init_options_set_domain_id(&init_options, config.ros2_domain_id()));
+
+    // Setup support structure.
     // RCSOFTCHECK 是一个宏定义，用于检查执行函数的返回值是否出错，如果出错，则会打印错误信息并退出程序。
     // 调用 rclc_support_init 函数初始化 ROS 2 运行时的支持库，传入 allocator
-    RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    RCSOFTCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
+    // RCSOFTCHECK(rclc_support_init(&support, 0, NULL, &allocator));
     // 调用 rclc_node_init_default 函数初始化 ROS 2 节点，传入节点名称、命名空间和支持库
     RCSOFTCHECK(rclc_node_init_default(&node, nodename.c_str(), ros2namespace.c_str(), &support));
+
+
     // 调用 rclc_publisher_init_best_effort 函数初始化 ROS 2 发布者，传入节点、消息类型和主题名称。
     RCSOFTCHECK(rclc_publisher_init_best_effort(
         &odom_publisher,

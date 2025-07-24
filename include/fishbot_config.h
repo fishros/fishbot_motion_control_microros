@@ -82,6 +82,7 @@
 //-----------------------------ROS2节点相关配置-------------------------------------------
 #define CONFIG_DEFAULT_ROS2_NODE_NAME "fishbot_motion_control"
 #define CONFIG_DEFAULT_ROS2_NAMESPACE ""
+#define CONFIG_DEFAULT_ROS2_DOMAIN_ID "0"
 #define CONFIG_DEFAULT_ROS2_ODOM_TOPIC_NAME "odom"
 #define CONFIG_DEFAULT_ROS2_ODOM_FRAME_ID "odom"
 #define CONFIG_DEFAULT_ROS2_ODOM_CHILD_FRAME_ID "base_footprint"
@@ -170,6 +171,7 @@ public:
     // ROS2相关
     String ros2_nodename();
     String ros2_namespace();
+    uint32_t ros2_domain_id();
     String ros2_odom_topic_name();
     String ros2_odom_frameid();
     String ros2_odom_child_frameid();
