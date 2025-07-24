@@ -196,6 +196,25 @@ static void deal_command(char key[32], char value[32])
     // 传入的命令不是 "restart" 或 "read_config"
     else
     {
+        // 判断参数是否为pid_kp、pid_ki或pid_kd，如果是则更新PID参数
+        if (strcmp(key, "pid_kp") == 0)
+        {
+            float kp = atof(value);
+            pid_controller[0].update_pid(kp, config.kinematics_pid_ki(), config.kinematics_pid_kd());
+            pid_controller[1].update_pid(kp, config.kinematics_pid_ki(), config.kinematics_pid_kd());
+        }
+        else if (strcmp(key, "pid_ki") == 0)
+        {
+            float ki = atof(value);
+            pid_controller[0].update_pid(config.kinematics_pid_kp(), ki, config.kinematics_pid_kd());
+            pid_controller[1].update_pid(config.kinematics_pid_kp(), ki, config.kinematics_pid_kd());
+        }
+        else if (strcmp(key, "pid_kd") == 0)
+        {
+            float kd = atof(value);
+            pid_controller[0].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), kd);
+            pid_controller[1].update_pid(config.kinematics_pid_kp(), config.kinematics_pid_ki(), kd);
+        }
         // 创建两个 String 对象 "recv_key" 和 "recv_value"
         // 并将传入的 "key" 和 "value" 分别作为参数来初始化这两个对象。
         String recv_key(key);
