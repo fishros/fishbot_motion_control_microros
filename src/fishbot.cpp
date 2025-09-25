@@ -431,7 +431,7 @@ void loop_fishbot_transport()
     // 该语句用于向MicroROS代理发送ping消息，并检查是否能够收到pong消息。
     // 如果收到pong消息，则将状态设置为AGENT_AVAILABLE；否则保持等待状态。
     case WAITING_AGENT:
-        EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+        EXECUTE_EVERY_N_MS(5000, state = (RMW_RET_OK == rmw_uros_ping_agent(300, 5)) ? AGENT_AVAILABLE : WAITING_AGENT;);
         digitalWrite(2, !digitalRead(2));
         if (state == WAITING_AGENT && wifi_status==FISHBOT_WIFI_STATUS_GOT_IP)
         {
@@ -456,7 +456,7 @@ void loop_fishbot_transport()
     // 该语句用于向MicroROS代理发送ping消息，并检查是否能够收到pong消息。
     // 如果收到pong消息，则保持AGENT_CONNECTED状态，并尝试同步时间。
     case AGENT_CONNECTED:
-        EXECUTE_EVERY_N_MS(2000, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 5)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+        EXECUTE_EVERY_N_MS(5000, state = (RMW_RET_OK == rmw_uros_ping_agent(300, 5)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
         if (state == AGENT_DISCONNECTED && wifi_status==FISHBOT_WIFI_STATUS_GOT_IP)
         {
             display.updateWIFIInfo("ping timeout", FISHBOT_WIFI_STATUS_PING_FAILED);
