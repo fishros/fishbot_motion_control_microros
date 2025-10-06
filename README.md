@@ -1,5 +1,8 @@
 # FishBot运动控制程序MicroROS版
 
+
+# 本程序及资料仅供参考学习使用，非授权禁止商用。
+
 配套运动控制板（可以在小鱼的店铺直接购买，性价比接地气，直达链接：[https://item.taobao.com/item.htm?id=695473143304](https://item.taobao.com/item.htm?id=695473143304)）：
 
 ![](./docs/images/1670950515258-0c1474f6-2d5a-4030-a1df-87bfdff78ba5-image-resized.png)
